@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Pricing - S.curls Studio' }) %>
+</head>
+<body>
+  <!-- Header -->
+  <%- include('Components/header', { active: 'pricing' }) %>
+
+  <!-- Pricing Hero -->
+  <section class="pricing-hero">
+    <div class="container pricing-hero-grid">
+      <div>
+        <p class="eyebrow">Transparent, no surprises</p>
+        <h1>Pick your service, lock your price</h1>
+        <p class="lead">Upfront rates for cuts, treatments, styling, and bundles. Book in one tap and we’ll prep a chair for you.</p>
+        <div class="hero-actions">
+          <button class="btn" data-pricing-book data-service="cutting">Book a Cut</button>
+          <button class="btn ghost" data-pricing-book data-service="treatment">Book a Treatment</button>
+        </div>
+        <p class="mini-note">Includes consultation · Taxes in · Same-day slots when available</p>
+      </div>
+      <div class="pricing-perks">
+        <div class="perk">
+          <span class="perk-label">Rebook savings</span>
+          <span class="perk-value">10% on every 3rd visit</span>
+        </div>
+        <div class="perk">
+          <span class="perk-label">Priority slots</span>
+          <span class="perk-value">For bundles & bridal</span>
+        </div>
+        <div class="perk">
+          <span class="perk-label">Aftercare</span>
+          <span class="perk-value">Home routine with every service</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section class="pricing">
+    <h1>Our Pricing</h1>
+
+    <div class="pricing-filters" aria-label="Filter services">
+      <button class="pricing-pill active" data-category="all">All</button>
+      <button class="pricing-pill" data-category="cutting">Cuts</button>
+      <button class="pricing-pill" data-category="treatment">Treatments</button>
+      <button class="pricing-pill" data-category="styling">Styling</button>
+      <button class="pricing-pill" data-category="bundle">Bundles</button>
+    </div>
+
+    <div class="pricing-container"></div>
+  </section>
+
+  <!-- Footer -->
+
+  <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
+  <script src="pricing.js"></script>
+</body>
+</html>

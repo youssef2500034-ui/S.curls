@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Product Management - Admin' }) %>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <%- include('Components/header', { active: 'admin-products' }) %>
+  <section class="admin-section">
+    <div class="container">
+      <h1>Product Management</h1>
+      <!-- Add Product Panel -->
+      <div class="admin-panel" id="product-panel">
+        <div class="panel-header">
+          <h2>Add product</h2>
+          <p>Add a product card with details.</p>
+          <button class="ghost-btn" id="close-product-panel">Close</button>
+        </div>
+        <form id="product-form" class="panel-form">
+          <div class="panel-row">
+            <input type="file" id="prod-file" accept="image/*">
+            <input type="text" id="prod-image-url" placeholder="https://.../product.jpg">
+            <input type="text" id="prod-name" placeholder="Product name" required>
+            <input type="text" id="prod-desc" placeholder="Description">
+            <input type="number" id="prod-price" placeholder="Price" required min="0">
+            <input type="number" id="prod-stock" placeholder="Stock" min="0">
+            <input type="text" id="prod-category" placeholder="Category">
+            <button type="submit" class="primary-btn">Save product</button>
+            <span id="prod-status" class="hint"></span>
+          </div>
+        </form>
+        <div id="admin-products-list"></div>
+      </div>
+      <script>
+        document.getElementById('close-product-panel').addEventListener('click', function() {
+          document.getElementById('product-panel').style.display = 'none';
+        });
+      </script>
+    </div>
+  </section>
+  <%- include('Components/footer') %>
+  <script src="admin-products.js"></script>
+</body>
+</html>

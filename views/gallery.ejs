@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Gallery - S.curls Studio' }) %>
+</head>
+<body>
+  <!-- Header -->
+  <%- include('Components/header', { active: 'gallery' }) %>
+
+  <!-- Gallery Hero -->
+  <section class="page-hero gallery-hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Our work</p>
+        <h1>Gallery of curls & shine</h1>
+        <p class="lead">Recent sets, cuts, and transformations from Rehab and Sheikh Zayed.</p>
+        <div class="hero-actions">
+          <a href="booking.html" class="btn">Book this style</a>
+          <a href="#gallery-grid" class="btn ghost">Browse looks</a>
+        </div>
+        <p class="mini-note">Updated weekly · Real guests · No stock retouching</p>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <p class="label">Styles captured</p>
+          <p class="value">128</p>
+          <p class="hint">Across both branches</p>
+        </div>
+        <div class="metric-card">
+          <p class="label">Average rating</p>
+          <p class="value">4.9</p>
+          <p class="hint">From booked sessions</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Grid -->
+  <section class="gallery-section" id="gallery-grid">
+    <div class="container">
+      <div class="filter-bar" aria-label="Filter gallery">
+        <button class="filter-pill is-active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="cuts">Cuts</button>
+        <button class="filter-pill" data-filter="color">Color</button>
+        <button class="filter-pill" data-filter="styling">Styling</button>
+        <button class="filter-pill" data-filter="bridal">Bridal</button>
+        <button class="filter-pill" data-filter="favs">Favorites</button>
+        <span class="filter-meta" id="filter-count">8 looks</span>
+      </div>
+
+      <div class="gallery-grid">
+        <article class="shot" data-id="shot-1" data-tags="cuts styling rehab" data-branch="rehab" data-stylist="sara" data-service="cutting">
+          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=900&q=80" alt="Soft layers with shine">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Rehab</span>
+              <span class="shot-badge ghost">Sara</span>
+            </div>
+            <h3>Soft layers with shine</h3>
+            <div class="shot-tags"><span>Cuts</span><span>Styling</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book with Sara</button>
+            </div>
+          </div>
+        </article>
+        <article class="shot" data-id="shot-2" data-tags="color styling rehab" data-branch="rehab" data-stylist="mona" data-service="treatment">
+          <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80" alt="Glossy caramel lights">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Rehab</span>
+              <span class="shot-badge ghost">Mona</span>
+            </div>
+            <h3>Glossy caramel lights</h3>
+            <div class="shot-tags"><span>Color</span><span>Styling</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book with Mona</button>
+            </div>
+          </div>
+        </article>
+        <article class="shot" data-id="shot-3" data-tags="styling sheikh" data-branch="sheikh-zayed" data-stylist="ahmed" data-service="styling">
+          <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80" alt="Defined twist-out">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Sheikh Zayed</span>
+              <span class="shot-badge ghost">Ahmed</span>
+            </div>
+            <h3>Defined twist-out</h3>
+            <div class="shot-tags"><span>Styling</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book with Ahmed</button>
+            </div>
+          </div>
+        </article>
+        <article class="shot" data-id="shot-4" data-tags="bridal styling sheikh" data-branch="sheikh-zayed" data-stylist="team" data-service="styling">
+          <img src="https://images.unsplash.com/photo-1526045478516-99145907023c?auto=format&fit=crop&w=900&q=80" alt="Modern bridal waves">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Sheikh Zayed</span>
+              <span class="shot-badge ghost">Team</span>
+            </div>
+            <h3>Modern bridal waves</h3>
+            <div class="shot-tags"><span>Bridal</span><span>Styling</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book this bridal look</button>
+            </div>
+          </div>
+        </article>
+        <article class="shot" data-id="shot-5" data-tags="cuts rehab" data-branch="rehab" data-stylist="sara" data-service="cutting">
+          <img src="https://images.unsplash.com/photo-1503314885791-306c1dd7ebf4?auto=format&fit=crop&w=900&q=80" alt="Rounded curl cut">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Rehab</span>
+              <span class="shot-badge ghost">Sara</span>
+            </div>
+            <h3>Rounded curl cut</h3>
+            <div class="shot-tags"><span>Cuts</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book with Sara</button>
+            </div>
+          </div>
+        </article>
+        <article class="shot" data-id="shot-6" data-tags="color sheikh" data-branch="sheikh-zayed" data-stylist="ahmed" data-service="treatment">
+          <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80" alt="Copper gloss">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Sheikh Zayed</span>
+              <span class="shot-badge ghost">Ahmed</span>
+            </div>
+            <h3>Copper gloss</h3>
+            <div class="shot-tags"><span>Color</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book with Ahmed</button>
+            </div>
+          </div>
+        </article>
+        <article class="shot" data-id="shot-7" data-tags="styling rehab" data-branch="rehab" data-stylist="mona" data-service="styling">
+          <img src="https://images.unsplash.com/photo-1502764613149-7f1d229e2300?auto=format&fit=crop&w=900&q=80" alt="Volume + shine finish">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Rehab</span>
+              <span class="shot-badge ghost">Mona</span>
+            </div>
+            <h3>Volume + shine finish</h3>
+            <div class="shot-tags"><span>Styling</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book with Mona</button>
+            </div>
+          </div>
+        </article>
+        <article class="shot" data-id="shot-8" data-tags="bridal styling rehab" data-branch="rehab" data-stylist="team" data-service="styling">
+          <img src="https://images.unsplash.com/photo-1502720705749-3c9255857623?auto=format&fit=crop&w=900&q=80" alt="Soft bridal updo">
+          <div class="shot-overlay">
+            <div class="shot-top">
+              <span class="shot-badge">Rehab</span>
+              <span class="shot-badge ghost">Team</span>
+            </div>
+            <h3>Soft bridal updo</h3>
+            <div class="shot-tags"><span>Bridal</span><span>Styling</span></div>
+            <div class="shot-actions">
+              <button class="shot-fav" data-fav>♡ Save</button>
+              <button class="shot-cta" data-book-look>Book this bridal look</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
+  <script src="gallery.js"></script>
+</body>
+</html>

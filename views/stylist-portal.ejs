@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Stylist Portal - Attendance' }) %>
+</head>
+<body class="stylist-portal">
+  <%- include('Components/header', { active: '' }) %>
+
+  <section class="portal portal-slim">
+    <div class="card" id="login-card">
+      <h2>Stylist Login</h2>
+      <p class="hint">Enter phone + PIN once; we’ll remember you on this device.</p>
+      <form id="stylist-login-form" class="admin-form two-col">
+        <label>Phone<input id="sty-login-phone" type="tel" placeholder="010..." required></label>
+        <label>PIN<input id="sty-login-pin" type="password" placeholder="4-6 digits" required></label>
+        <div class="form-actions">
+          <button type="submit" class="primary-btn wide">Login</button>
+          <span class="form-note" id="sty-login-status"></span>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" id="attendance-card" hidden>
+      <div class="portal-bar">
+        <div class="portal-bar-horizontal better-design">
+          <div class="portal-bar-left">
+            <h2 id="sty-identity" class="sty-identity-main">Mahmoud </h2>
+            <div class="button-group-horizontal">
+              <button class="primary-btn big-btn" type="button" id="btn-start-shift">Start shift</button>
+              <span id="start-time-label" class="time-label highlight-label" hidden></span>
+              <button class="ghost-btn big-btn" type="button" id="btn-end-shift" hidden>End shift</button>
+              <span id="end-time-label" class="time-label highlight-label" hidden></span>
+            </div>
+              
+          </div>
+            <div class="portal-bar-right">
+              <button class="ghost-btn" id="sty-logout">Logout</button>
+            </div>
+        </div>
+      </div>
+
+      <form id="sty-att-form" class="admin-form parallel-form">
+        <div class="organized-form">
+          <div class="form-row">
+            <label>Date<input id="sty-att-date" type="date" required></label>
+          </div>
+          <div class="form-row">
+            <label>Check-in<input id="sty-att-in" type="time" required></label>
+          </div>
+          <div class="form-row">
+            <label>Check-out<input id="sty-att-out" type="time"></label>
+          </div>
+          <div class="form-row">
+            <label>Notes<textarea id="sty-att-notes" rows="2" placeholder="Optional"></textarea></label>
+          </div>
+          <div class="form-row center-row">
+            <button type="submit" class="primary-btn wide">Submit attendance</button>
+            <span class="form-note" id="sty-att-status"></span>
+          </div>
+        </div>
+      </form>
+
+      <button id="show-att-list-btn" class="primary-btn small-btn" type="button" style="margin-top:10px;">Show Attendance List</button>
+      <div id="att-list-wrapper" hidden>
+        <button id="hide-att-list-btn" class="ghost-btn small-btn" type="button" style="margin-bottom:10px;">Hide Attendance List</button>
+        <div class="admin-list" id="sty-att-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
+  <script src="stylist-portal.js"></script>
+</body>
+</html>

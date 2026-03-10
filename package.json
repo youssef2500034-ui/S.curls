@@ -1,0 +1,37 @@
+{
+  "name": "s.curls",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "watch": "nodemon --ext *"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youssef2500034-ui/s.curls.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/youssef2500034-ui/s.curls/issues"
+  },
+  "homepage": "https://github.com/youssef2500034-ui/s.curls#readme",
+  "dependencies": {
+    "cloudinary": "^2.9.0",
+    "connect-livereload": "^0.6.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "livereload": "^0.10.3",
+    "method-override": "^3.0.0",
+    "moment": "^2.30.1",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.4",
+    "multer": "^2.0.0",
+    "node-cron": "^4.2.1",
+    "nodemon": "^3.1.14"
+  }
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Our Stylists - S.curls Studio' }) %>
+</head>
+<body>
+  <!-- Header -->
+  <%- include('Components/header', { active: 'staff' }) %>
+
+  <!-- Staff Section -->
+  <section class="staff">
+    <h1>Meet Our Stylists</h1>
+    <p class="staff-lead">Choose your pro by specialty or branch, peek their details, then book in one tap.</p>
+
+    <div class="staff-filters">
+      <div class="filter-group" data-filter-type="specialty">
+        <span class="filter-label">Specialty</span>
+        <button class="filter-btn active" data-value="all">All</button>
+        <button class="filter-btn" data-value="treatment">Treatment</button>
+        <button class="filter-btn" data-value="curls">Curls</button>
+        <button class="filter-btn" data-value="styling">Styling</button>
+        <button class="filter-btn" data-value="cutting">Cutting</button>
+        <button class="filter-btn" data-value="color">Color</button>
+        <button class="filter-btn" data-value="consultation">Consultation</button>
+      </div>
+      <div class="filter-group" data-filter-type="branch">
+        <span class="filter-label">Branch</span>
+        <button class="filter-btn active" data-value="all">All</button>
+        <button class="filter-btn" data-value="rehab">Rehab</button>
+        <button class="filter-btn" data-value="sheikh zayed">Sheikh Zayed</button>
+        <button class="filter-btn" data-value="both">Both</button>
+      </div>
+    </div>
+    <div class="staff-container">
+      <div class="empty-state">Loading stylists...</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+ 
+  <%- include('Components/footer') %>
+
+  <script src="api-client.js"></script>
+  <script src="booking-data.js"></script>
+  <script src="staff.js"></script>
+</body>
+</html>

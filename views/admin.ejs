@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Admin Dashboard - S.curls Studio' }) %>
+</head>
+<body>
+  <%- include('Components/header', { active: 'admin' }) %>
+  <!-- Admin Dashboard -->
+  <section class="admin">
+    <div class="admin-shell">
+      <div class="admin-header">
+        <div>
+          <p class="eyebrow">Control center</p>
+          <h1>Admin Dashboard</h1>
+          <p class="lede">Track bookings, filter by branch or stylist, and action items fast.</p>
+        </div>
+        <div class="admin-quick">
+          <button type="button" id="add-stylist" data-panel-id="panel-stylist" class="ghost-btn small">Add stylist card</button>
+          <button type="button" id="add-pricing" data-panel-id="panel-pricing" class="ghost-btn small">Add pricing card</button>
+          <button type="button" id="add-gallery" data-panel-id="panel-gallery" class="ghost-btn small">Add photo card</button>
+          <button type="button" id="add-employee" data-panel-id="panel-employee" onclick="openPanel(document.getElementById('panel-employee'))" class="ghost-btn small">Staff & Payroll</button>
+          <button type="button" id="add-attendance" data-panel-id="panel-attendance" onclick="openPanel(document.getElementById('panel-attendance'))" class="ghost-btn small">Attendance</button>
+          <button type="button" id="add-product" data-panel-id="panel-product" class="ghost-btn small">Add product card</button>
+        </div>
+      </div>
+
+      <div id="clock" class="clock"></div>
+
+      <div class="stat-cards">
+        <div class="stat-card">
+          <p>Total bookings</p>
+          <h3 id="stat-total">0</h3>
+          <span class="pill neutral">All</span>
+        </div>
+        <div class="stat-card">
+          <p>Pending</p>
+          <h3 id="stat-pending">0</h3>
+          <span class="pill pending">Pending</span>
+        </div>
+        <div class="stat-card">
+          <p>Confirmed</p>
+          <h3 id="stat-confirmed">0</h3>
+          <span class="pill confirmed">Confirmed</span>
+        </div>
+        <div class="stat-card">
+          <p>Cancelled</p>
+          <h3 id="stat-cancelled">0</h3>
+          <span class="pill cancelled">Cancelled</span>
+        </div>
+      </div>
+
+      <div class="card filters-card">
+        <div class="filters">
+          <label for="branch-filter">Filter by branch</label>
+          <select id="branch-filter">
+            <option value="all">All Branches</option>
+            <option value="rehab">Rehab Branch</option>
+            <option value="sheikh-zayed">Sheikh Zayed Branch</option>
+          </select>
+
+          <label for="stylist-filter">Filter by stylist</label>
+          <select id="stylist-filter">
+            <option value="all">All Stylists</option>
+            <option value="sara">Sara</option>
+            <option value="mona">Mona</option>
+            <option value="ahmed">Ahmed</option>
+          </select>
+
+          <label for="status-filter">Filter by status</label>
+          <select id="status-filter">
+            <option value="all">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card table-card">
+        <div class="table-header">
+          <h3>Bookings</h3>
+          <p class="hint">Live feed synced with customer bookings.</p>
+        </div>
+        <div class="table-scroll">
+          <table id="bookings-table">
+            <tr>
+              <th>Branch</th>
+              <th>Stylist</th>
+              <th>Service</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Duration</th>
+              <th>Mobile</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </table>
+        </div>
+        <p id="no-bookings" class="empty" style="display:none;">No bookings yet</p>
+      </div>
+
+      <!-- Hidden admin panels -->
+      <div id="panel-stylist" class="card admin-panel" hidden>
+        <div class="table-header">
+          <div>
+            <h3>Add stylist card</h3>
+            <p class="hint">Create a new stylist profile card.</p>
+          </div>
+          <button class="ghost-btn small" data-panel-close>Close</button>
+        </div>
+        <form id="form-stylist" class="admin-form">
+          <label>Name<input id="stylist-name" required></label>
+          <label>Branch
+            <select id="stylist-branch" required>
+              <option value="rehab">Rehab</option>
+              <option value="sheikh-zayed">Sheikh Zayed</option>
+              <option value="both">Both</option>
+            </select>
+          </label>
+          <label>Title<input id="stylist-title" placeholder="Senior Stylist"></label>
+          <label>Specialties (comma separated)<input id="stylist-specialties" placeholder="cutting, color"></label>
+          <label>Availability times (12-hour, comma)<input id="stylist-times" placeholder="10:00 AM, 11:30 AM, 2:00 PM"></label>
+          <label>Bio<textarea id="stylist-bio" rows="3" placeholder="Short bio"></textarea></label>
+          <label>Phone<input id="stylist-phone" placeholder="+201234567890"></label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Save stylist</button>
+            <span class="form-note" id="stylist-status"></span>
+          </div>
+        </form>
+        <div class="admin-list" id="list-stylists"></div>
+      </div>
+
+      <div id="panel-pricing" class="card admin-panel" hidden>
+        <div class="table-header">
+          <div>
+            <h3>Add pricing card</h3>
+            <p class="hint">Add a service with price and features.</p>
+          </div>
+          <button class="ghost-btn small" data-panel-close>Close</button>
+        </div>
+        <form id="form-pricing" class="admin-form">
+          <label>Title<input id="price-title" required placeholder="Hair Treatment"></label>
+          <label>Category
+            <select id="price-category" required>
+              <option value="cutting">Cuts</option>
+              <option value="treatment">Treatments</option>
+              <option value="styling">Styling</option>
+              <option value="bundle">Bundle</option>
+            </select>
+          </label>
+          <label>Amount (EGP)<input id="price-amount" type="number" min="0" step="50" required></label>
+          <label>Duration (minutes)<input id="price-duration" type="number" min="15" step="5"></label>
+          <label>Features (one per line)<textarea id="price-features" rows="3" placeholder="Deep conditioning&#10;Protein treatment"></textarea></label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Save pricing</button>
+            <span class="form-note" id="pricing-status"></span>
+          </div>
+        </form>
+        <div class="admin-list" id="list-pricing"></div>
+      </div>
+
+      <div id="panel-gallery" class="card admin-panel" hidden>
+        <div class="table-header">
+          <div>
+            <h3>Add gallery photo</h3>
+            <p class="hint">Add a photo card with tags.</p>
+          </div>
+          <button class="ghost-btn small" data-panel-close>Close</button>
+        </div>
+        <form id="form-gallery" class="admin-form" enctype="multipart/form-data">
+          <label>Upload image<input id="gallery-file" name="image" type="file" accept="image/*"></label>
+          <label>Or paste image URL<input id="gallery-url" name="url" type="url" placeholder="https://.../photo.jpg"></label>
+          <label>Title / look name<input id="gallery-title" name="title" placeholder="Curly glam"></label>
+          <label>Tags (space or comma)<input id="gallery-tags" name="tags" placeholder="curls rehab sara"></label>
+          <label>Branch<select id="gallery-branch" name="branch">
+            <option value="rehab">Rehab</option>
+            <option value="sheikh-zayed">Sheikh Zayed</option>
+            <option value="team">Both / team</option>
+          </select></label>
+          <label>Stylist (optional)<input id="gallery-stylist" name="stylist" placeholder="sara"></label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Save photo</button>
+            <span class="form-note" id="gallery-status"></span>
+          </div>
+        </form>
+        <div class="admin-list" id="list-gallery"></div>
+      </div>
+
+      <div id="panel-employee" class="card admin-panel" hidden>
+        <div class="table-header">
+          <div>
+            <h3>Staff & Payroll</h3>
+            <p class="hint">Add workers, salary details, and branches.</p>
+          </div>
+          <button class="ghost-btn small" data-panel-close>Close</button>
+        </div>
+        <form id="form-employee" class="admin-form">
+          <label>Name<input id="emp-name" required></label>
+          <label>Role / Title<input id="emp-role" placeholder="Stylist"></label>
+          <label>Branch<select id="emp-branch">
+            <option value="rehab">Rehab</option>
+            <option value="sheikh-zayed">Sheikh Zayed</option>
+            <option value="both">Both</option>
+          </select></label>
+          <label>Status<select id="emp-status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select></label>
+          <label>Login phone (for stylist portal)<input id="emp-login-phone" placeholder="010..." type="tel"></label>
+          <label>Login PIN<input id="emp-login-pin" type="password" autocomplete="new-password" placeholder="4-6 digits"></label>
+          <label>Base salary (EGP)<input id="emp-base" type="number" min="0" step="100"></label>
+          <label>Hourly rate (EGP)<input id="emp-hourly" type="number" min="0" step="10"></label>
+          <label>Start date<input id="emp-start" type="date"></label>
+          <label>Notes<textarea id="emp-notes" rows="2"></textarea></label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Save worker</button>
+            <span class="form-note" id="emp-status-note"></span>
+          </div>
+        </form>
+        <div class="admin-list" id="list-employees"></div>
+      </div>
+
+      <div id="panel-attendance" class="card admin-panel" hidden>
+        <div class="table-header">
+          <div>
+            <h3>Attendance</h3>
+            <p class="hint">Track check-in/out and hours. Restore archived months below.</p>
+          </div>
+          <button class="ghost-btn small" data-panel-close>Close</button>
+        </div>
+        <form id="form-attendance" class="admin-form">
+          <label>Employee<select id="att-employee" required></select></label>
+          <label>Date<input id="att-date" type="date" required></label>
+          <label>Check-in<input id="att-in" type="time"></label>
+          <label>Check-out<input id="att-out" type="time"></label>
+          <label>Hours<input id="att-hours" type="number" step="0.25" min="0"></label>
+          <label>Notes<textarea id="att-notes" rows="2"></textarea></label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Save attendance</button>
+            <span class="form-note" id="att-status-note"></span>
+          </div>
+        </form>
+        <div class="admin-list" id="list-attendance"></div>
+        <div class="restore-attendance">
+          <h4>Restore Archived Attendance</h4>
+          <form id="restore-attendance-form" class="admin-form inline-form">
+            <label>Month
+              <select id="restore-month">
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+            </label>
+            <label>Year
+              <input id="restore-year" type="number" min="2020" max="2100" value="2026" required>
+            </label>
+            <button type="submit" class="primary-btn">Restore Month</button>
+            <span id="restore-attendance-status" class="form-note"></span>
+          </form>
+        </div>
+      </div>
+
+      <div id="panel-stats" class="card admin-panel" hidden>
+        <div class="table-header">
+          <div>
+            <h3>Statistics</h3>
+            <p class="hint">Live KPIs pulled from bookings.</p>
+          </div>
+          <button class="ghost-btn small" data-panel-close>Close</button>
+        </div>
+        <div class="admin-list stats-grid">
+          <div class="stat-tile">
+            <p class="tiny-label">Total bookings</p>
+            <h2 id="stat-bookings">--</h2>
+          </div>
+          <div class="stat-tile">
+            <p class="tiny-label">Confirmed</p>
+            <h2 id="stat-confirmed">--</h2>
+          </div>
+          <div class="stat-tile">
+            <p class="tiny-label">Pending</p>
+            <h2 id="stat-pending">--</h2>
+          </div>
+          <div class="stat-tile">
+            <p class="tiny-label">Cancelled</p>
+            <h2 id="stat-cancelled">--</h2>
+          </div>
+          <div class="stat-tile">
+            <p class="tiny-label">Upcoming (next 7d)</p>
+            <h2 id="stat-upcoming">--</h2>
+          </div>
+          <div class="stat-tile">
+            <p class="tiny-label">Avg duration (mins)</p>
+            <h2 id="stat-duration">--</h2>
+          </div>
+          <div class="stat-tile">
+            <p class="tiny-label">Paid</p>
+            <h2 id="stat-paid">--</h2>
+          </div>
+          <div class="stat-tile">
+            <p class="tiny-label">Unpaid</p>
+            <h2 id="stat-unpaid">--</h2>
+          </div>
+        </div>
+        <div class="stats-table card">
+          <div class="table-header">
+            <h4>By branch</h4>
+          </div>
+          <table class="compact" id="stats-branch-table">
+            <thead>
+              <tr><th>Branch</th><th>Total</th><th>Confirmed</th><th>Pending</th><th>Cancelled</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Management Section -->
+  <section class="admin-section">
+    <div class="admin-actions">
+      
+    </div>
+    <!-- Add Product Panel -->
+    <div class="admin-panel product-panel" id="product-panel" style="display:none;">
+      <div class="panel-header">
+        <h2>Add product</h2>
+        <p>Add a product card with details.</p>
+        <button class="ghost-btn" id="close-product-panel">Close</button>
+      </div>
+      <form id="product-form" class="panel-form">
+        <div class="panel-fields">
+          <label>Upload image
+            <input type="file" id="prod-file" accept="image/*">
+          </label>
+          <label>Or paste image URL
+            <input type="text" id="prod-image-url" placeholder="https://.../product.jpg">
+          </label>
+          <label>Product name
+            <input type="text" id="prod-name" placeholder="Product name" required>
+          </label>
+          <label>Description
+            <input type="text" id="prod-desc" placeholder="Description">
+          </label>
+          <label>Price
+            <input type="number" id="prod-price" placeholder="Price" required min="0">
+          </label>
+          <label>Stock
+            <input type="number" id="prod-stock" placeholder="Stock" min="0">
+          </label>
+          <label>Category
+            <input type="text" id="prod-category" placeholder="Category">
+          </label>
+          <button type="submit" class="primary-btn">Save product</button>
+          <span id="prod-status" class="hint"></span>
+        </div>
+      </form>
+      <div id="admin-products-list"></div>
+    </div>
+    <script>
+      document.getElementById('add-product').addEventListener('click', function() {
+        document.getElementById('product-panel').style.display = 'block';
+        document.getElementById('product-panel').scrollIntoView({ behavior: 'smooth' });
+      });
+      document.getElementById('close-product-panel').addEventListener('click', function() {
+        document.getElementById('product-panel').style.display = 'none';
+      });
+    </script>
+  </section>
+
+  <!-- Footer -->
+ <%- include('Components/footer') %>
+
+  <script src="api-client.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Manage Bookings - S.curls Studio' }) %>
+</head>
+<body>
+  <!-- Header -->
+  <%- include('Components/header', { active: 'manage-booking' }) %>
+
+  <!-- Manage Bookings Section -->
+  <section class="manage-section">
+    <h1>Manage Your Bookings</h1>
+
+    <div class="manage-filters">
+      <div>
+        <label for="filter-status">Status</label>
+        <select id="filter-status">
+          <option value="all">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div>
+        <label for="filter-date">Date</label>
+        <input type="date" id="filter-date">
+      </div>
+    </div>
+
+    <div class="search-mobile">
+      <input type="tel" id="search-mobile" placeholder="Enter your mobile number (e.g., 01144744770)" maxlength="11">
+      <button onclick="searchBookings()">Search Bookings</button>
+      <button type="button" id="refresh-availability" class="ghost">Refresh Availability</button>
+      <button type="button" id="clear-filters" class="ghost">Clear Filters</button>
+    </div>
+
+    <div class="manage-summary">
+      <span id="result-count"></span>
+    </div>
+
+    <div id="bookings-container" class="bookings-list"></div>
+
+    <div id="no-bookings-msg" class="no-bookings" style="display: none;">
+      <p>No bookings found for this mobile number.</p>
+      <a href="booking.html">Book an Appointment</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+
+  <%- include('Components/footer') %>
+
+  <script src="booking-data.js"></script>
+  <script src="manage-booking.js"></script>
+
+</body>
+</html>

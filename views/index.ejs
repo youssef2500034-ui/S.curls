@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'S.curls Studio' }) %>
+</head>
+<body>
+  <%- include('Components/header', { active: 'home' }) %>
+
+  <section class="home">
+    <div class="container hero-wrap">
+      <p class="eyebrow">Curls crafted with care</p>
+      <h1>Welcome to S.curls Studio</h1>
+      <p class="lead">Your premium salon experience in Rehab & Sheikh Zayed.</p>
+      <div class="hero-actions">
+        <a href="/booking" class="btn">Book Your Appointment</a>
+        <a href="/gallery" class="btn ghost">View Our Work</a>
+      </div>
+      <a class="hero-subcta" href="#availability">See available times today ↓</a>
+    </div>
+  </section>
+
+  <section class="availability" id="availability">
+    <div class="container">
+      <div class="availability-header"> 
+        <p class="eyebrow">Live availability</p>
+        <h2>Available times today</h2>
+        <p class="section-lead">Updated every second across both branches.</p>
+        <div class="availability-actions">
+          <a class="btn ghost small" href="/staff">Meet our stylists</a>
+        </div>
+        <div class="slot-filters" aria-label="Filter available times by daypart">
+          <button type="button" class="slot-filter-btn active" data-slot-filter-home="all">All</button>
+          <button type="button" class="slot-filter-btn" data-slot-filter-home="morning">Morning</button>
+          <button type="button" class="slot-filter-btn" data-slot-filter-home="afternoon">Afternoon</button>
+          <button type="button" class="slot-filter-btn" data-slot-filter-home="evening">Evening</button>
+        </div>
+        <p class="availability-help">Pick a branch to see live slots; stylists and services update instantly from the admin dashboard.</p>
+      </div>
+
+      <div class="availability-grid">
+        <div class="avail-card" data-branch="rehab">
+          <div class="card-head">
+            <div class="card-head-left">
+              <span class="branch-icon warm">R</span>
+              <div>
+                <p class="eyebrow">Rehab</p>
+                <h3>Rehab Branch</h3>
+              </div>
+            </div>
+            <div class="card-head-right">
+              <div class="next-stylist" id="next-stylist-rehab">
+                <span class="label">Next stylist</span>
+                <span class="value">--</span>
+              </div>
+              <span class="next-slot" id="next-rehab">--</span>
+              <span class="status-dot live">Live</span>
+              <span class="live-stamp" id="live-stamp-rehab">Updated just now</span>
+            </div>
+          </div>
+          <div class="slot-list" id="slots-rehab"></div>
+          <a href="/booking" class="btn small">Book now</a>
+        </div>
+
+        <div class="avail-card" data-branch="sheikh-zayed">
+          <div class="card-head">
+            <div class="card-head-left">
+              <span class="branch-icon cool">Z</span>
+              <div>
+                <p class="eyebrow">Sheikh Zayed</p>
+                <h3>Sheikh Zayed Branch</h3>
+              </div>
+            </div>
+            <div class="card-head-right">
+              <div class="next-stylist" id="next-stylist-sheikh">
+                <span class="label">Next stylist</span>
+                <span class="value">--</span>
+              </div>
+              <span class="next-slot" id="next-sheikh">--</span>
+              <span class="status-dot live">Live</span>
+              <span class="live-stamp" id="live-stamp-sheikh">Updated just now</span>
+            </div>
+          </div>
+          <div class="slot-list" id="slots-sheikh-zayed"></div>
+          <a href="/booking" class="btn small">Book now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured" id="featured">
+    <div class="container featured-head">
+      <div>
+        <p class="eyebrow">Featured looks</p>
+        <h2>Book the style you love</h2>
+        <p class="section-lead">Hand-picked sets with branch and stylist pre-selected.</p>
+      </div>
+      <div class="featured-nav" aria-label="Featured looks navigation">
+        <button class="pill-btn ghost" data-slide="prev" aria-label="Previous look">‹</button>
+        <button class="pill-btn ghost" data-slide="next" aria-label="Next look">›</button>
+      </div>
+    </div>
+    <div class="featured-track" id="featured-track">
+      <div class="empty-state">Loading featured looks...</div>
+    </div>
+  </section>
+
+  <section class="pillars" id="pillars">
+    <div class="container pillars-grid">
+      <div class="pillar-card">
+        <span class="pill-icon">C</span>
+        <h3>Curl specialists</h3>
+        <p>Dedicated curl experts with tailored consults.</p>
+      </div>
+      <div class="pillar-card">
+        <span class="pill-icon">G</span>
+        <h3>Gentle products</h3>
+        <p>Sulfate-free, silicone-free, curl-safe formulas.</p>
+      </div>
+      <div class="pillar-card">
+        <span class="pill-icon">H</span>
+        <h3>Heat-safe</h3>
+        <p>Low-heat protocols that protect texture and shine.</p>
+      </div>
+      <div class="pillar-card">
+        <span class="pill-icon">L</span>
+        <h3>Lounge comfort</h3>
+        <p>Calm spaces with refreshments and Wi‑Fi.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="branch-cards" id="branches">
+    <div class="container branch-grid">
+      <article class="branch-card" data-branch="rehab">
+        <div>
+          <p class="eyebrow">Rehab</p>
+          <h3>Rehab Branch</h3>
+          <p class="small">Rehab City, Ring Road, Cairo</p>
+          <p class="branch-status" id="status-rehab">Loading status...</p>
+        </div>
+        <div class="branch-actions">
+          <a class="btn small" href="tel:+201234567890">Call</a>
+          <a class="btn ghost small" href="https://wa.me/201234567890" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn ghost small" href="https://www.google.com/maps/dir//S+curls,+3GC8%2BCQQ,+Second+New+Cairo,+Cairo+Governorate+4752280/@30.0580864,31.5031552,14z/data=!3m1!4b1!4m8!4m7!1m0!1m5!1m1!1s0x145819739d5d4c3d:0x2c42c54a818b959d!2m2!1d31.5170702!2d30.0709817?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener">Map</a>
+        </div>
+      </article>
+      <article class="branch-card" data-branch="sheikh-zayed">
+        <div>
+          <p class="eyebrow">Sheikh Zayed</p>
+          <h3>Sheikh Zayed Branch</h3>
+          <p class="small">Sheikh Zayed, Giza Governorate</p>
+          <p class="branch-status" id="status-sheikh">Loading status...</p>
+        </div>
+        <div class="branch-actions">
+          <a class="btn small" href="tel:+201234567891">Call</a>
+          <a class="btn ghost small" href="https://wa.me/201234567891" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn ghost small" href="https://www.google.com/maps/dir//S+Curls,+Crazy+Water+Axis,+Arkan+Mall,+Arkan+Plaza+Shop+B1-7+,6+October+Giza+Plot+31,+Giza+Governorate/@30.0207689,30.4760912,10z/data=!4m17!1m8!3m7!1s0x14585b2a632e1ccd:0xacd1860b1fee6ef4!2sS+Curls!8m2!3d30.0207689!4d31.003435!15sCjBTIEN1cmxzLCBDcmF6eSBXYXRlciBBeGlzLCBGaXJzdCBBbCBTaGVpa2ggWmF5ZWRaMCIucyBjdXJscyBjcmF6eSB3YXRlciBheGlzIGZpcnN0IGFsIHNoZWlraCB6YXllZJIBD3Nob3BwaW5nX2NlbnRlcpoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQyMDVObFJ0ZUVSVE1WSlVZVEpPTUdWRmJ6QlBTSEJGVFVSQ05FOVdSUkFC4AEA-gEECAAQJA!16s%2Fg%2F11mzff1yt_!4m7!1m0!1m5!1m1!1s0x14585b2a632e1ccd:0xacd1860b1fee6ef4!2m2!1d31.003435!2d30.0207689?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener">Map</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <%- include('Components/footer') %>
+</body>
+<script src="index.js"></script>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Book Now - S.curls Studio' }) %>
+</head>
+<body>
+  <!-- Header -->
+  <%- include('Components/header', { active: 'booking' }) %>
+
+  <!-- Booking Form -->
+  <section class="booking">
+    <h1>Book Your Appointment</h1>
+    <div class="form-notice" id="form-notice" role="alert" aria-live="polite" hidden></div>
+    <div class="booking-context" aria-live="polite">
+      <div class="chip" data-chip="branch" hidden></div>
+      <div class="chip" data-chip="service" hidden></div>
+      <div class="chip" data-chip="stylist" hidden></div>
+      <button type="button" class="chip ghost" id="clear-pref" hidden>Clear</button>
+    </div>
+    <form id="booking-form" class="booking-form">
+      <label for="branch">Choose Branch:</label>
+      <select id="branch" required>
+        <option value="">-- Select Branch --</option>
+        <option value="rehab">Rehab Branch</option>
+        <option value="sheikh-zayed">Sheikh Zayed Branch</option>
+      </select>
+      <div class="field-error" data-error-for="branch"></div>
+
+      <label for="service">Choose Service:</label>
+      <div class="service-pills" aria-label="Choose service type">
+        <button type="button" class="service-pill" data-service-pill="cutting">Cut</button>
+        <button type="button" class="service-pill" data-service-pill="styling">Style</button>
+        <button type="button" class="service-pill" data-service-pill="treatment">Treatment</button>
+      </div>
+      <select id="service" class="sr-only" required>
+        <option value="">-- Select Service --</option>
+        <option value="treatment">Treatment (90 mins)</option>
+        <option value="cutting">Cutting (60 mins)</option>
+        <option value="styling">Styling (45 mins)</option>
+      </select>
+      <div class="field-error" data-error-for="service"></div>
+
+      <label for="stylist">Choose Stylist:</label>
+      <select id="stylist" required>
+        <option value="">-- Select Stylist --</option>
+      </select>
+      <div class="field-error" data-error-for="stylist"></div>
+
+      <label for="date">Select Date:</label>
+      <input type="date" id="date" required>
+      <div class="field-error" data-error-for="date"></div>
+
+      <div class="time-row">
+        <label for="time" class="select-time-label">Select Time:</label>
+        <span class="slot-count" id="time-count" aria-live="polite"></span>
+      </div>
+      <div class="select-time-container" aria-label="Filter time of day">
+        <div class="button-group-horizontal">
+          <button type="button" class="ghost-btn small active" data-slot-filter="all">All</button>
+          <button type="button" class="ghost-btn small" data-slot-filter="morning">Morning</button>
+          <button type="button" class="ghost-btn small" data-slot-filter="afternoon">Afternoon</button>
+          <button type="button" class="ghost-btn small" data-slot-filter="evening">Evening</button>
+        </div>
+      </div>
+      <div class="time-select-wrap">
+        <select id="time" required></select>
+      </div>
+      <p id="no-slots">No available slots for this stylist on this date.</p>
+      <div class="field-error" data-error-for="time"></div>
+
+      <label for="mobile">Mobile Number:</label>
+      <input type="tel" id="mobile" placeholder="01XXXXXXXXX" required pattern="[0-9]{11}">
+      <div class="field-error" data-error-for="mobile"></div>
+
+      <button type="submit" class="btn">Confirm Booking</button>
+    </form>
+  </section>
+
+  <!-- Footer -->
+  <%- include('Components/footer') %>
+
+  <!-- JavaScript -->
+  <script src="api-client.js"></script>
+  <script src="booking-data.js"></script>
+  <script src="booking.js"></script>
+</body>
+</html>

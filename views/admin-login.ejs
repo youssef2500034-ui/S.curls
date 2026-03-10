@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('Components/head', { title: 'Admin Login - S.curls Studio' }) %>
+</head>
+
+<body class="login-page">
+  <%- include('Components/header', { active: 'admin-login' }) %>
+
+    <main class="login-main">
+        <section class="login">
+            <div class="login-head">
+                <p class="eyebrow">Restricted</p>
+                <h1>Admin Login</h1>
+                <p class="lede">Enter your credentials to access the control center.</p>
+            </div>
+
+            <form id="login-form" class="login-form">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="admin" autocomplete="username" required>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••" autocomplete="current-password" required>
+
+                <button type="submit" class="btn">Login</button>
+            </form>
+
+            <p id="error-message" class="login-error">Invalid credentials</p>
+            <a class="back-link" href="/">← Back to Home</a>
+        </section>
+    </main>
+
+        <script src="api-client.js"></script>
+        <script src="admin-login.js"></script>
+
+      
+      </body>
+
+      </html>

@@ -1,0 +1,24 @@
+<header>
+  <div class="header-left">
+    <img src="/pic/logooo.png" alt="S.curls Logo" class="logo" loading="lazy">
+  </div>
+  <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <nav class="header-right">
+    <ul>
+      <li><a href="/" class="<%= active === 'home' ? 'active' : '' %>">Home</a></li>
+      <li><a href="/gallery" class="<%= active === 'gallery' ? 'active' : '' %>">Gallery</a></li>
+      <li><a href="/staff" class="<%= active === 'staff' ? 'active' : '' %>">Stylists</a></li>
+      <li><a href="/pricing" class="<%= active === 'pricing' ? 'active' : '' %>">Pricing</a></li>
+      <li><a href="/booking" class="<%= active === 'booking' ? 'active' : '' %>">Book Now</a></li>
+      <li><a href="/manage-booking" class="<%= active === 'manage-booking' ? 'active' : '' %>">My Bookings</a></li>
+      <li><a href="/contact" class="<%= active === 'contact' ? 'active' : '' %>">Contact</a></li>
+       <li><a href="/shop">Shop</a></li>
+       <li><a href="/cart" id="cart-nav-link"><span class="cart-icon">🛒</span></a></li>
+    </ul>
+  </nav>
+
+</header>

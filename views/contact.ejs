@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Contact Us - S.curls Studio' }) %>
+</head>
+<body>
+  <!-- Header -->
+  <%- include('Components/header', { active: 'contact' }) %>
+
+  <!-- Contact Section -->
+  <section class="contact">
+    <h1>Get In Touch</h1>
+    <p class="contact-lead">Book, ask, or partner with us. We typically respond within 1 business hour.</p>
+
+    <div class="contact-quick">
+      <button class="chip ghost" data-copy="01144744770">Copy Rehab Phone</button>
+      <a class="chip" href="https://wa.me/201144744770" target="_blank" rel="noopener">WhatsApp Rehab</a>
+      <button class="chip ghost" data-copy="01122121167">Copy Zayed Phone</button>
+      <a class="chip" href="https://wa.me/201122121167" target="_blank" rel="noopener">WhatsApp Zayed</a>
+      <a class="chip primary" href="/booking">Book Now</a>
+      <a class="chip" href="/manage-booking">Manage Booking</a>
+      <a class="chip" href="mailto:info@scurlsstudio.com">Email Us</a>
+    </div>
+
+    <div class="contact-wrapper">
+      <div class="contact-info">
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <h3>Phone</h3>
+            <p>Rehab: 01144744770</p>
+            <p>Sheikh Zayed: 01122121167</p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div>
+            <h3>Email</h3>
+            <p><a href="mailto:info@scurlsstudio.com">info@scurlsstudio.com</a></p>
+            <p><a href="mailto:booking@scurlsstudio.com">booking@scurlsstudio.com</a></p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">📱</div>
+          <div>
+            <h3>Social Media</h3>
+            <p><a href="https://www.instagram.com/s.curls.eg/?hl=en" target="_blank" rel="noopener">Instagram: @s.curls.eg</a></p>
+            <p><a href="https://www.tiktok.com/@s.curls.eg" target="_blank" rel="noopener">TikTok: @s.curls.eg</a></p>
+            <p><a href="https://www.facebook.com/s.curls.eg/" target="_blank" rel="noopener">Facebook: S.curls Studio</a></p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon">⏰</div>
+          <div>
+            <h3>Working Hours</h3>
+            <p>Saturday - Thursday: 10:00 AM - 10:00 PM</p>
+            <p>Friday: 12:00 PM - 10:00 PM</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form">
+        <h3 class="accent">Send us a Message</h3>
+        <div id="contact-alert" class="form-notice" hidden></div>
+        <form id="contact-form" novalidate>
+          <label class="sr-only" for="contact-name">Name</label>
+          <input id="contact-name" name="name" type="text" placeholder="Your Name" required>
+          <div class="field-error" data-error-for="contact-name"></div>
+
+          <label class="sr-only" for="contact-email">Email</label>
+          <input id="contact-email" name="email" type="email" placeholder="Your Email" required>
+          <div class="field-error" data-error-for="contact-email"></div>
+
+          <label class="sr-only" for="contact-phone">Phone</label>
+          <input id="contact-phone" name="phone" type="tel" placeholder="01XXXXXXXXX" required pattern="^(?:\+20|0)?(10|11|12|15)\d{8}$">
+          <div class="field-error" data-error-for="contact-phone"></div>
+
+          <label class="sr-only" for="contact-message">Message</label>
+          <textarea id="contact-message" name="message" placeholder="Your Message..." required></textarea>
+          <div class="field-error" data-error-for="contact-message"></div>
+
+          <button type="submit">Send Message</button>
+        </form>
+        <p class="contact-cta">Want to book instead? <a href="booking.html">Go to booking</a></p>
+      </div>
+
+      <div class="branches">
+        <div class="branch">
+          <h3>📍 Rehab Branch</h3>
+          <p><strong>Location:</strong> New Cairo, Rehab</p>
+          <p><strong>Phone:</strong> <a href="tel:+201144744770">01144744770</a></p>
+          <p><strong>Hours:</strong> 10:00 AM - 10:00 PM</p>
+          <div class="branch-actions">
+            <a class="btn ghost" href="https://www.google.com/maps/dir//S+curls,+3GC8%2BCQQ,+Second+New+Cairo,+Cairo+Governorate+4752280/@30.0580864,31.5031552,14z/data=!3m1!4b1!4m8!4m7!1m0!1m5!1m1!1s0x145819739d5d4c3d:0x2c42c54a818b959d!2m2!1d31.5170702!2d30.0709817?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener">Open in Maps</a>
+            <a class="btn" href="https://wa.me/201144744770" target="_blank" rel="noopener">WhatsApp</a>
+          </div>
+        </div>
+
+        <div class="branch">
+          <h3>📍 Sheikh Zayed Branch</h3>
+          <p><strong>Location:</strong> Arkan Plaza, Sheikh Zayed City</p>
+          <p><strong>Phone:</strong> <a href="tel:+201122121167">01122121167</a></p>
+          <p><strong>Hours:</strong> 10:00 AM - 10:00 PM</p>
+          <div class="branch-actions">
+            <a class="btn ghost" href="https://www.google.com/maps/dir//S+Curls,+Crazy+Water+Axis,+Arkan+Mall,+Arkan+Plaza+Shop+B1-7+,6+October+Giza+Plot+31,+Giza+Governorate/@30.0207689,30.4760912,10z/data=!4m17!1m8!3m7!1s0x14585b2a632e1ccd:0xacd1860b1fee6ef4!2sS+Curls!8m2!3d30.0207689!4d31.003435!15sCjBTIEN1cmxzLCBDcmF6eSBXYXRlciBBeGlzLCBGaXJzdCBBbCBTaGVpa2ggWmF5ZWRaMCIucyBjdXJscyBjcmF6eSB3YXRlciBheGlzIGZpcnN0IGFsIHNoZWlraCB6YXllZJIBD3Nob3BwaW5nX2NlbnRlcpoBRENpOURRVWxSUVVOdlpFTm9kSGxqUmpsdlQyMDVObFJ0ZUVSVE1WSlVZVEpPTUdWRmJ6QlBTSEJGVFVSQ05FOVdSUkFC4AEA-gEECAAQJA!16s%2Fg%2F11mzff1yt_!4m7!1m0!1m5!1m1!1s0x14585b2a632e1ccd:0xacd1860b1fee6ef4!2m2!1d31.003435!2d30.0207689?entry=ttu&g_ep=EgoyMDI2MDMwMi4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener">Open in Maps</a>
+            <a class="btn" href="https://wa.me/201122121167" target="_blank" rel="noopener">WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+
+  <%- include('Components/footer') %>
+  <script src="contact.js"></script>
+</body>
+</html>
