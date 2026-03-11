@@ -25,7 +25,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const SEED_DEFAULTS = process.env.SEED_DEFAULTS === 'true';
 if (!MONGO_URI) {
 	console.error('MONGO_URI is required in .env');
-	process.exit(1);
+	if (require.main === module) process.exit(1);
 }
 // Live reload (auto-refresh) with safe fallbacks
 const LIVE_RELOAD_ENABLED = process.env.LIVE_RELOAD !== 'false';
@@ -110,20 +110,24 @@ app.use((err, _req, res, _next) => {
 	res.status(500).json({ error: 'Internal server error' });
 });
 
-mongoose
-	.connect(MONGO_URI)
-	.then(async () => {
-		if (SEED_DEFAULTS) {
-			await seedDefaults();
-		}
-		app.listen(PORT, () => {
-			console.log(`S.curls running on http://localhost:${PORT}`);
-			console.log('MongoDB connected');
+if (require.main === module) {
+	mongoose
+		.connect(MONGO_URI)
+		.then(async () => {
+			if (SEED_DEFAULTS) {
+				await seedDefaults();
+			}
+			app.listen(PORT, () => {
+				console.log(`S.curls running on http://localhost:${PORT}`);
+				console.log('MongoDB connected');
+			});
+		})
+		.catch((err) => {
+			console.error('MongoDB connection error:', err);
 		});
-	})
-	.catch((err) => {
-		console.error('MongoDB connection error:', err);
-	});
+}
+
+module.exports = app;
 
 async function seedDefaults() {
 	const stylistCount = await Stylist.countDocuments();
