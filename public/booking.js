@@ -1,11 +1,12 @@
 const confirmBtn = document.querySelector("#booking-form .btn");
+const bookingShared = window.bookingData || {};
+const api = window.apiClient || null;
 
 function setBookingButtonState() {
   if (!confirmBtn) return;
   const hasValidTime = timeSelect && timeSelect.value && timeSelect.selectedIndex > 0;
   confirmBtn.disabled = !hasValidTime;
 }
-const api = window.apiClient || null;
 let stylists = [];
 let pricing = [];
 let stylistsByBranch = {};
@@ -44,10 +45,11 @@ function buildMaps() {
   availability = {};
   (stylists || []).forEach((s) => {
     const branch = (s.branch || '').toLowerCase();
+    const styName = (s.name || s.stylist || '').toLowerCase();
     if (!stylistsByBranch[branch]) stylistsByBranch[branch] = [];
-    stylistsByBranch[branch].push(s.name || s.stylist || '');
+    stylistsByBranch[branch].push(styName);
     if (!availability[branch]) availability[branch] = {};
-    availability[branch][(s.name || '').toLowerCase()] = s.times || [];
+    availability[branch][styName] = s.times || [];
   });
 
   serviceDuration = {};
@@ -79,14 +81,16 @@ async function loadData() {
 
   buildMaps();
   repopulateStylists();
-  syncServicePills(serviceSelect.value || 'cutting');
+  try {
+    localStorage.removeItem('preferredService');
+  } catch (err) {}
+  setSelectedServices([]);
   updateTimes();
 }
 
 function getFreeSlots(date, branch, stylist, service) {
-    const branchKey = (branch || "").toLowerCase();
-    const stylistKey = (stylist || "").toLowerCase();
-    return { branchKey, stylistKey };
+  if (!bookingShared.getFreeSlots) return [];
+  return bookingShared.getFreeSlots(date, branch, stylist, service);
 }
 
 async function syncBookingToApi(record) {
@@ -120,7 +124,11 @@ const serviceSelect = document.getElementById("service");
 const dateInput = document.getElementById("date");
 const timeSelect = document.getElementById("time");
 const noSlotsMsg = document.getElementById("no-slots");
+const nameInput = document.getElementById("name");
+const emailInput = document.getElementById("email");
+const paymentMethodSelect = document.getElementById("payment-method");
 const servicePills = document.querySelectorAll("[data-service-pill]");
+const servicePillInputs = document.querySelectorAll("[data-service-pill] input[type='checkbox']");
 const slotFilterButtons = document.querySelectorAll("[data-slot-filter]");
 const chipBranch = document.querySelector('[data-chip="branch"]');
 const chipService = document.querySelector('[data-chip="service"]');
@@ -132,6 +140,29 @@ const timeCount = document.getElementById("time-count");
 const timeWrap = document.querySelector(".time-select-wrap");
 const mobileInput = document.getElementById("mobile");
 let activeSlotFilter = "all";
+
+function getSelectedServices() {
+  const pills = Array.from(servicePillInputs)
+    .filter((el) => el.checked)
+    .map((el) => el.value);
+  if (pills.length) return pills;
+  // Fallback to select multiple
+  const selectedFromSelect = Array.from(serviceSelect?.selectedOptions || []).map((opt) => opt.value);
+  return selectedFromSelect;
+}
+
+function setSelectedServices(values = []) {
+  const set = new Set(values);
+  servicePillInputs.forEach((el) => {
+    el.checked = set.has(el.value);
+  });
+  if (serviceSelect) {
+    Array.from(serviceSelect.options).forEach((opt) => {
+      opt.selected = set.has(opt.value);
+    });
+  }
+  syncServicePills(values);
+}
 
 setTodayAsMinimum();
 dateInput.value = dateInput.value || getTodayStr();
@@ -145,6 +176,7 @@ function repopulateStylists() {
   let firstStylist = "";
   stylistsByBranch[branch].forEach((stylist, idx) => {
     const opt = new Option(stylist, stylist);
+    opt.textContent = capitalize(stylist);
     stylistSelect.appendChild(opt);
     if (idx === 0) firstStylist = stylist;
   });
@@ -163,37 +195,36 @@ function applySlotFilter(slots, filter) {
   return slots;
 }
 
-function updateTimes() {
-    setBookingButtonState();
+async function updateTimes() {
+  setBookingButtonState();
   const selectedDate = dateInput.value;
   const selectedBranch = branchSelect.value;
   const selectedStylist = stylistSelect.value;
-  const selectedService = serviceSelect.value;
+  const selectedServices = getSelectedServices();
+  const primaryService = selectedServices[0] || "";
 
   timeSelect.innerHTML = "";
   timeSelect.appendChild(new Option("Pick a time", "", true, true));
 
-  if (!selectedDate || !selectedBranch || !selectedStylist || !selectedService) {
+  if (!selectedDate || !selectedBranch || !selectedStylist || !primaryService) {
     noSlotsMsg.style.display = "none";
     if (timeWrap) timeWrap.hidden = false;
     if (timeCount) timeCount.textContent = "";
     return;
   }
 
-  // Prefetch and cache available slots
   if (!window._bookingSlotCache) window._bookingSlotCache = {};
-  const cacheKey = `${selectedDate}_${selectedBranch}_${selectedStylist}_${selectedService}`;
-  function renderSlots(resp) {
-    if (!resp?.slots) return;
-    const { branchKey, stylistKey } = getFreeSlots(selectedDate, selectedBranch, selectedStylist, selectedService);
-    let allSlots = resp.slots.filter(
-      (s) => s.branch === branchKey && s.stylist === stylistKey
-    ).map((s) => s.time);
-    window._bookingSlotCache[cacheKey] = allSlots;
-    let freeSlots = applySlotFilter(allSlots, activeSlotFilter);
-    if (freeSlots.length === 0 && allSlots.length > 0 && activeSlotFilter !== "all") {
+  const cacheKey = `${selectedDate}_${selectedBranch}_${selectedStylist}_${primaryService}`;
+
+  async function renderSlots() {
+    const slots = window._bookingSlotCache[cacheKey]
+      ? window._bookingSlotCache[cacheKey]
+      : await getFreeSlots(selectedDate, selectedBranch, selectedStylist, primaryService);
+    window._bookingSlotCache[cacheKey] = Array.isArray(slots) ? slots : [];
+    let freeSlots = applySlotFilter(window._bookingSlotCache[cacheKey], activeSlotFilter);
+    if (freeSlots.length === 0 && window._bookingSlotCache[cacheKey].length > 0 && activeSlotFilter !== "all") {
       showFormNotice("No slots in this time window—showing all.", "info");
-      freeSlots = allSlots;
+      freeSlots = window._bookingSlotCache[cacheKey];
     }
     hideFormNotice();
     timeSelect.innerHTML = "";
@@ -215,18 +246,18 @@ function updateTimes() {
     }
     setBookingButtonState();
   }
-  // Use cache if available
-  if (window._bookingSlotCache[cacheKey]) {
-    renderSlots({ slots: window._bookingSlotCache[cacheKey].map(time => ({ branch: selectedBranch.toLowerCase(), stylist: selectedStylist.toLowerCase(), time })) });
-  } else {
-    api.apiFetch(`/api/availability?date=${selectedDate}`).then(renderSlots);
-  }
+
+  await renderSlots();
 }
 
-function syncServicePills(active) {
+function syncServicePills(activeList = []) {
+  const set = new Set(Array.isArray(activeList) ? activeList : [activeList]);
   servicePills.forEach((pill) => {
-    const isActive = pill.dataset.servicePill === active;
+    const val = pill.dataset.servicePill;
+    const isActive = set.has(val);
     pill.classList.toggle("is-active", isActive);
+    const input = pill.querySelector("input[type='checkbox']");
+    if (input) input.checked = isActive;
   });
 }
 
@@ -281,14 +312,14 @@ function hideFormNotice() {
   delete formNotice.dataset.type;
 }
 
-function validateForm({ branch, stylist, service, date, time, mobile }) {
+function validateForm({ branch, stylist, services, date, time, mobile, paymentMethod }) {
   let ok = true;
   if (!branch) {
     showFieldError("branch", "Please select a branch");
     ok = false;
   }
-  if (!service) {
-    showFieldError("service", "Please select a service");
+  if (!services || services.length === 0) {
+    showFieldError("service", "Please select at least one service");
     ok = false;
   }
   if (!stylist) {
@@ -307,6 +338,10 @@ function validateForm({ branch, stylist, service, date, time, mobile }) {
     showFieldError("mobile", "Enter a valid 11-digit mobile");
     ok = false;
   }
+  if (paymentMethodSelect && !paymentMethod) {
+    showFieldError("payment-method", "Select payment method");
+    ok = false;
+  }
   if (!ok) {
     showFormNotice("Please fix the highlighted fields", "error");
   } else {
@@ -321,14 +356,15 @@ function isValidEgyptMobile(num) {
 
 function updateChips() {
   const branch = branchSelect.value || localStorage.getItem("preferredBranch") || "";
-  const service = serviceSelect.value || localStorage.getItem("preferredService") || "";
+  const services = getSelectedServices();
   const stylist = stylistSelect.value || localStorage.getItem("preferredStylist") || "";
+  const serviceLabel = services.length ? services.join(", ") : "";
 
   setChip(chipBranch, branch, branch ? `Branch: ${branch}` : "");
-  setChip(chipService, service, service ? `Service: ${service}` : "");
+  setChip(chipService, serviceLabel, serviceLabel ? `Service: ${serviceLabel}` : "");
   setChip(chipStylist, stylist, stylist ? `Stylist: ${capitalize(stylist)}` : "");
 
-  const any = branch || service || stylist;
+  const any = branch || services.length || stylist;
   if (clearPrefBtn) clearPrefBtn.hidden = !any;
 
   if (clearPrefBtn) {
@@ -342,8 +378,7 @@ function updateChips() {
       } catch (err) {}
       branchSelect.value = "";
       stylistSelect.value = "";
-      serviceSelect.value = "";
-      syncServicePills("");
+      setSelectedServices([]);
       dateInput.value = dateInput.min || "";
       timeSelect.innerHTML = "";
       if (timeCount) timeCount.textContent = "";
@@ -357,21 +392,19 @@ function updateChips() {
   }
 }
 
-servicePills.forEach((pill) => {
-  pill.addEventListener("click", () => {
-    const val = pill.dataset.servicePill;
-    serviceSelect.value = val;
-    syncServicePills(val);
+servicePillInputs.forEach((input) => {
+  input.addEventListener("change", () => {
+    const selected = getSelectedServices();
+    setSelectedServices(selected);
     clearFieldError("service");
-    updateTimes(); // Always update times immediately
+    updateTimes();
     updateChips();
     setBookingButtonState();
   });
 });
 
 if (serviceSelect) {
-  serviceSelect.value = "cutting";
-  syncServicePills("cutting");
+  setSelectedServices([]);
 }
 
 branchSelect.addEventListener("change", () => {
@@ -390,6 +423,8 @@ stylistSelect.addEventListener("change", () => {
 });
 
 serviceSelect.addEventListener("change", () => {
+  const selectedFromSelect = Array.from(serviceSelect.selectedOptions || []).map((opt) => opt.value);
+  setSelectedServices(selectedFromSelect);
   updateTimes();
   updateChips();
   clearFieldError("service");
@@ -415,73 +450,81 @@ slotFilterButtons.forEach((btn) => {
   });
 });
 
-document.getElementById("booking-form").addEventListener("submit", (e) => {
-    setBookingButtonState();
-    e.preventDefault();
-    clearAllErrors();
+document.getElementById("booking-form").addEventListener("submit", async (e) => {
+  setBookingButtonState();
+  e.preventDefault();
+  clearAllErrors();
 
-    // Wait for available times to load
-    const branch = branchSelect.value;
-    const stylist = stylistSelect.value;
-    const service = serviceSelect.value;
-    const date = dateInput.value;
-    let time = timeSelect.value;
-    const mobile = mobileInput.value.trim();
-    const duration = serviceDuration[service] || 60;
+  const branch = branchSelect.value;
+  const stylist = stylistSelect.value;
+  const services = getSelectedServices();
+  const primaryService = services[0] || "";
+  const date = dateInput.value;
+  let time = timeSelect.value;
+  const mobile = mobileInput.value.trim();
+  const fullName = nameInput ? nameInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim() : '';
+  const paymentMethod = paymentMethodSelect ? paymentMethodSelect.value : '';
+  const duration = services.reduce((acc, key) => acc + (serviceDuration[key] || 60), 0) || 60;
 
-    // Fetch available slots from backend and ensure time is valid
-    api.apiFetch(`/api/availability?date=${date}`).then((resp) => {
-      if (!resp?.slots) {
-        showFormNotice('No available times loaded. Please try again.', 'error');
+  const availableTimes = await getFreeSlots(date, branch, stylist, primaryService);
+  if (!availableTimes.length) {
+    showFormNotice('No available times for this stylist on this date.', 'error');
+    return;
+  }
+  if (!time || !availableTimes.includes(time)) {
+    time = availableTimes[0];
+    timeSelect.value = time;
+  }
+
+  if (!validateForm({ branch, stylist, services, date, time, mobile, paymentMethod })) {
+    return;
+  }
+
+  const serviceLabel = services.join(', ');
+  const newBooking = { branch, stylist, service: serviceLabel, services, date, time, duration, mobile, status: "Pending", name: fullName, email, paymentMethod };
+  syncBookingToApi(newBooking)
+    .then(() => {
+      try {
+        localStorage.setItem("preferredBranch", branch);
+        localStorage.setItem("preferredStylist", stylist);
+        localStorage.setItem("preferredMobile", mobile);
+        localStorage.setItem("preferredDate", date);
+        localStorage.setItem("preferredTime", time);
+      } catch (err) {}
+      showToast(`Booking confirmed with ${capitalize(stylist)} at ${formatTime12h(time)} on ${date}.`);
+      hideFormNotice();
+      e.target.reset();
+      setTodayAsMinimum();
+      dateInput.value = getTodayStr();
+      updateTimes();
+      updateChips();
+    })
+    .catch((err) => {
+      console.error('Booking failed', err);
+      const msg = err?.message || 'Booking failed, please try again';
+      const needsRating = err?.bookingId && err?.activeDate === undefined;
+      const hasActive = err?.activeDate;
+      if (hasActive) {
+        const detail = err.activeTime ? ` at ${formatTime12h(err.activeTime)}` : '';
+        showFormNotice(`${msg} Active booking on ${err.activeDate}${detail}.`, 'error');
         return;
       }
-      const branchKey = (branch || '').toLowerCase();
-      const stylistKey = (stylist || '').toLowerCase();
-      const availableTimes = resp.slots.filter(
-        (s) => s.branch === branchKey && s.stylist === stylistKey
-      ).map((s) => s.time);
-      if (!availableTimes.length) {
-        showFormNotice('No available times for this stylist on this date.', 'error');
-        return;
+      const extra = needsRating ? ' Redirecting you to rate your last visit.' : '';
+      showFormNotice(`${msg}${extra}`, needsRating ? 'info' : 'error');
+      if (needsRating) {
+        const returnTo = window.location.pathname || '/booking';
+        const params = new URLSearchParams({ mobile, returnTo });
+        setTimeout(() => {
+          window.location.href = `/testimonials?${params.toString()}`;
+        }, 300);
       }
-      // Ensure a valid time is always selected
-      if (!time || !availableTimes.includes(time)) {
-        time = availableTimes[0];
-        timeSelect.value = time;
-      }
-      if (!validateForm({ branch, stylist, service, date, time, mobile })) {
-        return;
-      }
-      const newBooking = { branch, stylist, service, date, time, duration, mobile, status: "Pending" };
-      syncBookingToApi(newBooking)
-        .then(() => {
-          try {
-            localStorage.setItem("preferredBranch", branch);
-            localStorage.setItem("preferredStylist", stylist);
-            localStorage.setItem("preferredService", service);
-            localStorage.setItem("preferredMobile", mobile);
-            localStorage.setItem("preferredDate", date);
-            localStorage.setItem("preferredTime", time);
-          } catch (err) {}
-          showToast(`Booking confirmed with ${capitalize(stylist)} at ${formatTime12h(time)} on ${date}.`);
-          hideFormNotice();
-          e.target.reset();
-          setTodayAsMinimum();
-          dateInput.value = getTodayStr();
-          updateTimes();
-          updateChips();
-        })
-        .catch((err) => {
-          console.error('Booking failed', err);
-          showFormNotice(err.message || 'Booking failed, please try again', 'error');
-        });
     });
 });
 
 function hydratePreferredSelections() {
   const preferredBranch = localStorage.getItem("preferredBranch");
   const preferredStylist = localStorage.getItem("preferredStylist");
-  const preferredService = localStorage.getItem("preferredService");
   const preferredMobile = localStorage.getItem("preferredMobile");
   const preferredDate = localStorage.getItem("preferredDate");
   const preferredTime = localStorage.getItem("preferredTime");
@@ -500,10 +543,7 @@ function hydratePreferredSelections() {
       stylistSelect.value = preferredStylist;
     }
 
-    if (preferredService && serviceSelect.querySelector(`option[value="${preferredService}"]`)) {
-      serviceSelect.value = preferredService;
-      syncServicePills(preferredService);
-    }
+    setSelectedServices([]);
   }
 
   if (preferredMobile && mobileInput) {

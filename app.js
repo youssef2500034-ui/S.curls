@@ -13,9 +13,10 @@ cron.schedule('0 0 1 * *', async () => {
 });
 require('dotenv').config();
 const express = require('express');
+const dns = require('dns');
 const path = require('path');
 const mongoose = require('mongoose');
-const { Stylist, Pricing, Gallery, Booking, Article } = require('./models/mydataschema');
+const { Stylist, Pricing, Gallery, Booking, Article, Product } = require('./models/mydataschema');
 const { asyncHandler } = require('./routes/utils');
 
 const app = express();
@@ -86,6 +87,10 @@ app.use('/api/bookings', require('./routes/apiBookings'));
 app.use('/api/availability', require('./routes/apiAvailability'));
 app.use('/api/employees', require('./routes/apiEmployees'));
 app.use('/api/attendance', require('./routes/apiAttendance'));
+app.use('/api/messages', require('./routes/apiMessages'));
+app.use('/api/reviews', require('./routes/apiRatings'));
+app.use('/api/orders', require('./routes/apiOrders'));
+app.use('/api/clients', require('./routes/apiClients'));
 
 const apiProducts = require('./routes/apiProducts');
 const apiCart = require('./routes/apiCart');
@@ -111,6 +116,12 @@ app.use((err, _req, res, _next) => {
 });
 
 if (require.main === module) {
+	try {
+		dns.setServers(['1.1.1.1', '8.8.8.8']);
+		console.log('Node DNS servers set to Cloudflare/Google for SRV resolution');
+	} catch (err) {
+		console.warn('Could not set DNS servers for Node resolver:', err && err.message ? err.message : err);
+	}
 	mongoose
 		.connect(MONGO_URI)
 		.then(async () => {
@@ -133,6 +144,7 @@ async function seedDefaults() {
 	const stylistCount = await Stylist.countDocuments();
 	const pricingCount = await Pricing.countDocuments();
 	const bookingCount = await Booking.countDocuments();
+	const productCount = await Product.countDocuments();
 	if (stylistCount === 0) {
 		await Stylist.insertMany([
 			{ name: 'sara', branch: 'rehab', title: 'Senior Stylist', times: ['09:00', '11:00', '15:00'] },
@@ -157,5 +169,14 @@ async function seedDefaults() {
 			{ branch: 'sheikh-zayed', stylist: 'ahmed', service: 'styling', date: '2026-12-02', time: '15:00', duration: 45, mobile: '01100000000', status: 'Pending' },
 		]);
 		console.log('Seeded sample bookings');
+	}
+
+	if (productCount === 0) {
+		await Product.insertMany([
+			{ name: 'Curl Cleanse Shampoo', category: 'shampoo', price: 420, stock: 30, brand: 'S.curls', image: 'https://via.placeholder.com/300x300?text=Shampoo' },
+			{ name: 'Hydration Mask', category: 'treatment', price: 560, stock: 25, brand: 'S.curls', image: 'https://via.placeholder.com/300x300?text=Mask' },
+			{ name: 'Diffuser Dryer', category: 'tools', price: 1350, stock: 12, brand: 'ProCurl', image: 'https://via.placeholder.com/300x300?text=Diffuser' },
+		]);
+		console.log('Seeded default products');
 	}
 }

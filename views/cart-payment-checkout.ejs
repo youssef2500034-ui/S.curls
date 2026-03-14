@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Payment - S.curls Studio' }) %>
+  <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+  <%- include('Components/header', { active: 'shop' }) %>
+
+  <section class="page-hero cart-hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Payment</p>
+        <h1>Finalize your payment</h1>
+        <p class="lead">Choose Card or Instapay instructions below.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="payment-section" id="payment-page" data-page="payment">
+    <div class="container payment-grid">
+      <div class="payment-card">
+        <h2>Card payment</h2>
+        <p>We will call/text you to share a secure payment link. You can also pay on delivery.</p>
+        <a class="btn" href="/cart-checkout">Back to checkout</a>
+      </div>
+      <div class="payment-card">
+        <h2>Instapay</h2>
+        <p>Send to our Instapay handle: <strong>s.curls@instapay</strong>. Include your order number in notes.</p>
+        <a class="btn ghost" href="/cart-checkout">Back to checkout</a>
+      </div>
+    </div>
+  </section>
+
+  <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
+  <script src="cart.js"></script>
+</body>
+</html>

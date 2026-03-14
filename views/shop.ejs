@@ -2,21 +2,71 @@
 <html lang="en">
 <head>
   <%- include('Components/head', { title: 'Shop - S.curls Studio' }) %>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="shop.css">
 </head>
 <body>
   <%- include('Components/header', { active: 'shop' }) %>
-  <section class="shop-hero">
-    <div class="container">
-      <h1>Shop Products</h1>
-      <p class="lead">Browse our curated hair care products and accessories.</p>
+
+  <!-- Shop Hero (gallery-like) -->
+  <section class="page-hero gallery-hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="pill">Salon shop</div>
+        <h1>Pro care picked by curl experts</h1>
+        <p class="lead">Hydration-first formulas, frizz control kits, and the tools we trust in the studio.</p>
+        <div class="hero-actions">
+          <a href="#shop-grid" class="btn">Browse products</a>
+          <a href="/contact" class="btn ghost">Talk to a stylist</a>
+        </div>
+        <div class="hero-perks">
+          <span>✔ Same-day Cairo delivery</span>
+          <span>✔ Free shipping over 750 EGP</span>
+          <span>✔ Genuine salon stock</span>
+        </div>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <p class="label">Products live</p>
+          <p class="value" id="product-count">0</p>
+          <p class="hint">Synced with stock</p>
+        </div>
+        <div class="metric-card">
+          <p class="label">Best for</p>
+          <p class="value">Curls & coils</p>
+          <p class="hint">Curated by stylists</p>
+        </div>
+        <div class="metric-card highlight">
+          <p class="label">Bundle & save</p>
+          <p class="value">Mix 3, -10%</p>
+          <p class="hint">Applied at checkout</p>
+        </div>
+      </div>
     </div>
   </section>
-  <section class="shop-grid-section">
+
+  <!-- Shop Grid (gallery-style) -->
+  <section class="gallery-section" id="shop-grid">
     <div class="container">
-      <div class="shop-grid" id="shop-grid"></div>
+      <div class="filter-bar" aria-label="Filter products">
+        <div class="filter-title">Quick filter</div>
+        <button class="filter-pill is-active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="shampoo">Shampoo</button>
+        <button class="filter-pill" data-filter="treatment">Treatment</button>
+        <button class="filter-pill" data-filter="tools">Tools</button>
+        <button class="filter-pill" data-filter="accessories">Accessories</button>
+        <button class="filter-pill" data-filter="favs">Favorites</button>
+        <span class="filter-meta" id="filter-count">0 products</span>
+      </div>
+
+      <div class="gallery-grid shop-grid" id="shop-grid-list">
+        <!-- Products will be rendered here by shop.js -->
+      </div>
+
       <aside class="cart-sidebar" id="cart-sidebar">
-        <h2>Your Cart</h2>
+        <div class="cart-header">
+          <h2>Your cart</h2>
+          <button class="close-cart" type="button" aria-label="Close cart">×</button>
+        </div>
         <ul id="cart-items"></ul>
         <div class="cart-summary">
           <span id="cart-subtotal">Subtotal: $0</span>
@@ -25,7 +75,9 @@
       </aside>
     </div>
   </section>
+
   <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
   <script src="shop.js"></script>
 </body>
 </html>

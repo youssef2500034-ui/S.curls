@@ -5,6 +5,7 @@
 </head>
 <body>
   <%- include('Components/header', { active: 'admin' }) %>
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
   <!-- Admin Dashboard -->
   <section class="admin">
     <div class="admin-shell">
@@ -14,14 +15,7 @@
           <h1>Admin Dashboard</h1>
           <p class="lede">Track bookings, filter by branch or stylist, and action items fast.</p>
         </div>
-        <div class="admin-quick">
-          <button type="button" id="add-stylist" data-panel-id="panel-stylist" class="ghost-btn small">Add stylist card</button>
-          <button type="button" id="add-pricing" data-panel-id="panel-pricing" class="ghost-btn small">Add pricing card</button>
-          <button type="button" id="add-gallery" data-panel-id="panel-gallery" class="ghost-btn small">Add photo card</button>
-          <button type="button" id="add-employee" data-panel-id="panel-employee" onclick="openPanel(document.getElementById('panel-employee'))" class="ghost-btn small">Staff & Payroll</button>
-          <button type="button" id="add-attendance" data-panel-id="panel-attendance" onclick="openPanel(document.getElementById('panel-attendance'))" class="ghost-btn small">Attendance</button>
-          <button type="button" id="add-product" data-panel-id="panel-product" class="ghost-btn small">Add product card</button>
-        </div>
+      
       </div>
 
       <div id="clock" class="clock"></div>
@@ -74,12 +68,31 @@
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
+        <div class="filters aux">
+          <label for="booking-search">Quick search</label>
+          <input id="booking-search" type="search" placeholder="Search mobile, stylist, service">
+
+          <label for="from-date">From</label>
+          <input id="from-date" type="date">
+
+          <label for="to-date">To</label>
+          <input id="to-date" type="date">
+
+          <button id="refresh-bookings" type="button" class="ghost-btn small">Refresh</button>
+        </div>
       </div>
 
       <div class="card table-card">
         <div class="table-header">
           <h3>Bookings</h3>
           <p class="hint">Live feed synced with customer bookings.</p>
+          <div class="legend">
+            <span class="pill pending">Pending</span>
+            <span class="pill confirmed">Confirmed</span>
+            <span class="pill cancelled">Cancelled</span>
+            <span class="pill paid">Paid</span>
+            <span class="pill neutral">Unpaid</span>
+          </div>
         </div>
         <div class="table-scroll">
           <table id="bookings-table">
@@ -92,11 +105,43 @@
               <th>Duration</th>
               <th>Mobile</th>
               <th>Status</th>
+              <th>Payment</th>
               <th>Actions</th>
             </tr>
           </table>
         </div>
-        <p id="no-bookings" class="empty" style="display:none;">No bookings yet</p>
+      </div>
+
+      <div class="admin-dock">
+        <div class="dock-card">
+          <p class="tiny-label">Content</p>
+          <h4>Cards & media</h4>
+          <p class="hint">Stylist, pricing, and gallery updates.</p>
+          <div class="dock-actions">
+            <button class="ghost-btn xsmall" data-panel-target="panel-stylist">Stylists</button>
+            <button class="ghost-btn xsmall" data-panel-target="panel-pricing">Pricing</button>
+            <button class="ghost-btn xsmall" data-panel-target="panel-gallery">Gallery</button>
+          </div>
+        </div>
+        <div class="dock-card">
+          <p class="tiny-label">Team</p>
+          <h4>Staff & payroll</h4>
+          <p class="hint">Manage workers and attendance.</p>
+          <div class="dock-actions">
+            <button class="ghost-btn xsmall" data-panel-target="panel-employee">Staff</button>
+            <button class="ghost-btn xsmall" data-panel-target="panel-attendance">Attendance</button>
+            <button class="ghost-btn xsmall" data-panel-target="panel-clients">Clients</button>
+          </div>
+        </div>
+        <div class="dock-card">
+          <p class="tiny-label">Store</p>
+          <h4>Products</h4>
+          <p class="hint">Create and edit shop products.</p>
+          <div class="dock-actions">
+            <button class="ghost-btn xsmall" data-panel-target="product-panel">Products</button>
+            <button class="ghost-btn xsmall" id="open-messaging-dock">Notify clients</button>
+          </div>
+        </div>
       </div>
 
       <!-- Hidden admin panels -->
@@ -269,6 +314,29 @@
         </div>
       </div>
 
+      <div id="panel-clients" class="card admin-panel" hidden>
+        <div class="table-header">
+          <div>
+            <h3>Clients & visits</h3>
+            <p class="hint">Frequent visitors with quick history.</p>
+          </div>
+          <div class="dock-actions">
+            <button class="ghost-btn small" type="button" id="client-refresh">Refresh</button>
+            <button class="ghost-btn small" data-panel-close>Close</button>
+          </div>
+        </div>
+        <div class="filters aux">
+          <label for="client-search">Search</label>
+          <input id="client-search" type="search" placeholder="Search name or mobile">
+          <button id="client-search-btn" type="button" class="ghost-btn small">Search</button>
+        </div>
+        <div id="client-summary" class="hint"></div>
+        <div class="admin-list" id="list-clients"></div>
+        <div class="card" id="client-detail">
+          <p class="hint">Select a client to see visits.</p>
+        </div>
+      </div>
+
       <div id="panel-stats" class="card admin-panel" hidden>
         <div class="table-header">
           <div>
@@ -327,55 +395,66 @@
   </section>
 
   <!-- Product Management Section -->
-  <section class="admin-section">
-    <div class="admin-actions">
-      
-    </div>
-    <!-- Add Product Panel -->
-    <div class="admin-panel product-panel" id="product-panel" style="display:none;">
-      <div class="panel-header">
-        <h2>Add product</h2>
-        <p>Add a product card with details.</p>
-        <button class="ghost-btn" id="close-product-panel">Close</button>
-      </div>
-      <form id="product-form" class="panel-form">
-        <div class="panel-fields">
-          <label>Upload image
-            <input type="file" id="prod-file" accept="image/*">
-          </label>
-          <label>Or paste image URL
-            <input type="text" id="prod-image-url" placeholder="https://.../product.jpg">
-          </label>
-          <label>Product name
-            <input type="text" id="prod-name" placeholder="Product name" required>
-          </label>
-          <label>Description
-            <input type="text" id="prod-desc" placeholder="Description">
-          </label>
-          <label>Price
-            <input type="number" id="prod-price" placeholder="Price" required min="0">
-          </label>
-          <label>Stock
-            <input type="number" id="prod-stock" placeholder="Stock" min="0">
-          </label>
-          <label>Category
-            <input type="text" id="prod-category" placeholder="Category">
-          </label>
-          <button type="submit" class="primary-btn">Save product</button>
-          <span id="prod-status" class="hint"></span>
+  <section class="admin product-admin" id="product-panel" hidden>
+    <div class="admin-shell product-shell">
+      <div class="card product-card">
+        <div class="table-header">
+          <div>
+            <p class="eyebrow">Store</p>
+            <h2>Products</h2>
+            <p class="hint">Create, edit, and preview shop products. Use either a hosted image URL or upload a small preview.</p>
+          </div>
+          <div class="dock-actions">
+            <button class="ghost-btn xsmall" id="close-product-panel">Hide</button>
+          </div>
         </div>
-      </form>
-      <div id="admin-products-list"></div>
+
+        <div class="product-grid">
+          <div class="product-form-wrap">
+            <form id="product-form" class="panel-form">
+              <div class="panel-fields">
+                <label>Upload image
+                  <input type="file" id="prod-file" accept="image/*">
+                </label>
+                <label>Or paste image URL
+                  <input type="text" id="prod-image-url" placeholder="https://.../product.jpg">
+                </label>
+                <label>Product name
+                  <input type="text" id="prod-name" placeholder="Product name" required>
+                </label>
+                <label>Description
+                  <input type="text" id="prod-desc" placeholder="Description">
+                </label>
+                <div class="grid-2">
+                  <label>Brand
+                    <input type="text" id="prod-brand" placeholder="Brand">
+                  </label>
+                  <label>Category
+                    <input type="text" id="prod-category" placeholder="Category">
+                  </label>
+                </div>
+                <div class="grid-2">
+                  <label>Price
+                    <input type="number" id="prod-price" placeholder="Price" required min="0">
+                  </label>
+                  <label>Stock
+                    <input type="number" id="prod-stock" placeholder="Stock" min="0">
+                  </label>
+                </div>
+                <p class="hint tiny">Tip: Use either a hosted image URL or upload a small preview. Brand/category help search later.</p>
+                <div class="form-actions">
+                  <button type="submit" class="primary-btn">Save product</button>
+                  <span id="prod-status" class="form-note"></span>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="product-list-wrap">
+            <div id="admin-products-list"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <script>
-      document.getElementById('add-product').addEventListener('click', function() {
-        document.getElementById('product-panel').style.display = 'block';
-        document.getElementById('product-panel').scrollIntoView({ behavior: 'smooth' });
-      });
-      document.getElementById('close-product-panel').addEventListener('click', function() {
-        document.getElementById('product-panel').style.display = 'none';
-      });
-    </script>
   </section>
 
   <!-- Footer -->
@@ -383,5 +462,6 @@
 
   <script src="api-client.js"></script>
   <script src="admin.js"></script>
+    <script src="admin-products.js"></script>
 </body>
 </html>

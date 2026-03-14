@@ -32,10 +32,13 @@ const table = document.getElementById("bookings-table");
 const branchFilter = document.getElementById("branch-filter");
 const stylistFilter = document.getElementById("stylist-filter");
 const statusFilter = document.getElementById("status-filter");
+const searchInput = document.getElementById('booking-search');
+const fromDateInput = document.getElementById('from-date');
+const toDateInput = document.getElementById('to-date');
+const refreshBtn = document.getElementById('refresh-bookings');
 const noBookingsMsg = document.getElementById("no-bookings");
 const clockDiv = document.getElementById("clock");
 const statTotal = document.getElementById("stat-total");
-const statPending = document.getElementById("stat-pending");
 const statConfirmed = document.getElementById("stat-confirmed");
 const statCancelled = document.getElementById("stat-cancelled");
 const statPaid = document.getElementById("stat-paid");
@@ -51,17 +54,27 @@ const addPricingBtn = document.getElementById("add-pricing");
 const addGalleryBtn = document.getElementById("add-gallery");
 const addEmployeeBtn = document.getElementById("add-employee");
 const addAttendanceBtn = document.getElementById("add-attendance");
+// Messaging button created dynamically later
 const panelStylist = document.getElementById("panel-stylist");
 const panelPricing = document.getElementById("panel-pricing");
 const panelGallery = document.getElementById("panel-gallery");
 const panelEmployee = document.getElementById("panel-employee");
 const panelAttendance = document.getElementById("panel-attendance");
+const panelProduct = document.getElementById("product-panel");
+const panelClients = document.getElementById("panel-clients");
+// Messaging panel (created dynamically if not present)
+let panelMessaging = document.getElementById("panel-messaging");
+let panelBackdrop = null;
 const panelCloseBtns = document.querySelectorAll("[data-panel-close]");
 const formStylist = document.getElementById("form-stylist");
 const formPricing = document.getElementById("form-pricing");
 const formGallery = document.getElementById("form-gallery");
 const formEmployee = document.getElementById("form-employee");
 const formAttendance = document.getElementById("form-attendance");
+// Messaging form (dynamic)
+let formMessaging = document.getElementById("form-messaging");
+let statusMessaging = document.getElementById("msg-status");
+let listMessagesBox = document.getElementById("list-messages");
 const statusStylist = document.getElementById("stylist-status");
 const statusPricing = document.getElementById("pricing-status");
 const statusGallery = document.getElementById("gallery-status");
@@ -72,6 +85,12 @@ const listPricing = document.getElementById("list-pricing");
 const listGallery = document.getElementById("list-gallery");
 const listEmployees = document.getElementById("list-employees");
 const listAttendance = document.getElementById("list-attendance");
+const listClients = document.getElementById("list-clients");
+const clientDetailBox = document.getElementById("client-detail");
+const clientSearchInput = document.getElementById("client-search");
+const clientSearchBtn = document.getElementById("client-search-btn");
+const clientRefreshBtn = document.getElementById("client-refresh");
+const clientSummary = document.getElementById("client-summary");
 const selectAttendanceEmployee = document.getElementById("att-employee");
 const attCheckInInput = document.getElementById("att-in");
 const attCheckOutInput = document.getElementById("att-out");
@@ -96,6 +115,73 @@ let cachedGallery = [];
 let cachedBookings = [];
 let cachedEmployees = [];
 let cachedAttendance = [];
+let cachedClients = [];
+let cachedMessages = [];
+
+// Delegate booking action buttons so they keep working after rerenders
+function handleTableClick(event) {
+  const btn = event.target.closest('[data-action]');
+  if (!btn) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  if (!id || !action) {
+    showToast('Missing booking id for this action', 'error');
+    return;
+  }
+  if (action === 'confirm') return confirmBooking(id);
+  if (action === 'cancel') return cancelBooking(id);
+  if (action === 'delete') return deleteBooking(id);
+  if (action === 'pay-cash') return markPaid(id, 'cash');
+  if (action === 'pay-visa') return markPaid(id, 'visa');
+}
+
+if (table && !table.dataset.actionsBound) {
+  table.addEventListener('click', handleTableClick);
+  table.dataset.actionsBound = 'true';
+}
+
+// Inline notifications + form helpers
+const toastStack = document.getElementById('toast-stack');
+
+function showToast(message, variant = 'info') {
+  if (!toastStack) return;
+  const node = document.createElement('div');
+  node.className = `toast ${variant}`;
+  node.innerHTML = `<span>${message}</span><button type="button" aria-label="Dismiss">×</button>`;
+  toastStack.appendChild(node);
+  requestAnimationFrame(() => node.classList.add('visible'));
+  const remove = () => {
+    node.classList.remove('visible');
+    setTimeout(() => node.remove(), 200);
+  };
+  node.querySelector('button')?.addEventListener('click', remove);
+  setTimeout(remove, 4200);
+}
+
+function setStatus(el, message, state = 'info') {
+  if (!el) return;
+  el.textContent = message || '';
+  el.dataset.state = state;
+}
+
+function flagInput(input, message) {
+  if (!input) return false;
+  input.classList.add('input-error');
+  input.setAttribute('aria-invalid', 'true');
+  if (message) showToast(message, 'error');
+  input.focus();
+  return false;
+}
+
+function clearFieldState(inputs = []) {
+  inputs.forEach((inp) => {
+    if (!inp) return;
+    inp.classList.remove('input-error');
+    inp.removeAttribute('aria-invalid');
+  });
+}
 
 async function fetchStylists() {
   cachedStylists = await api.apiFetch('/api/stylists');
@@ -120,6 +206,33 @@ async function fetchEmployees() {
 async function fetchAttendance() {
   cachedAttendance = await api.apiFetch('/api/attendance', {}, { auth: true });
   return cachedAttendance;
+}
+
+async function fetchMessages() {
+  cachedMessages = await api.apiFetch('/api/messages', {}, { auth: true });
+  return cachedMessages;
+}
+
+async function fetchClients(force = false) {
+  if (cachedClients.length && !force) return cachedClients;
+  cachedClients = await api.apiFetch('/api/clients', {}, { auth: true });
+  return cachedClients;
+}
+
+async function fetchClientDetail(mobile) {
+  const mobileClean = (mobile || '').trim();
+  if (!mobileClean) throw new Error('Mobile required');
+  return api.apiFetch(`/api/clients/${encodeURIComponent(mobileClean)}`, {}, { auth: true });
+}
+
+async function deleteClient(mobile) {
+  const mobileClean = (mobile || '').trim();
+  if (!mobileClean) throw new Error('Mobile required');
+  return api.apiFetch(`/api/clients/${encodeURIComponent(mobileClean)}`, { method: 'DELETE' }, { auth: true });
+}
+
+async function sendMessageApi(payload) {
+  return api.apiFetch('/api/messages', { method: 'POST', body: JSON.stringify(payload) }, { auth: true });
 }
 
 async function fetchBookings(filters = {}) {
@@ -359,69 +472,95 @@ async function renderBookings() {
       branch: branchFilter.value,
       stylist: stylistFilter.value,
       status: statusFilter.value,
+      from: fromDateInput?.value,
+      to: toDateInput?.value,
     });
   } catch (err) {
-    table.innerHTML = '<tr><td colspan="9">Failed to load bookings</td></tr>';
-    noBookingsMsg.style.display = "block";
+    table.innerHTML = '<thead><tr><th>Branch</th><th>Stylist</th><th>Service</th><th>Date</th><th>Time</th><th>Duration</th><th>Mobile</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody><tr><td colspan="10">Failed to load bookings</td></tr></tbody>';
+    if (noBookingsMsg) noBookingsMsg.style.display = "none";
     return;
   }
 
-  table.innerHTML = `
-    <tr>
-      <th>Branch</th>
-      <th>Stylist</th>
-      <th>Service</th>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Duration</th>
-      <th>Mobile</th>
-      <th>Status</th>
-      <th>Payment</th>
-      <th>Actions</th>
-    </tr>
+  const header = `
+    <thead>
+      <tr>
+        <th>Branch</th>
+        <th>Stylist</th>
+        <th>Service</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Duration</th>
+        <th>Mobile</th>
+        <th>Status</th>
+        <th>Payment</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
   `;
 
   let bookings = cleanOldBookings();
   updateStats(bookings);
 
-  let filtered = bookings; // server already filtered
+  const q = (searchInput?.value || '').toLowerCase().trim();
+  let filtered = bookings;
+  if (q) {
+    filtered = bookings.filter((b) => {
+      const bucket = [b.branch, b.stylist, b.service, b.mobile, b.status, b.paymentStatus]
+        .map((v) => (v || '').toString().toLowerCase())
+        .join(' ');
+      return bucket.includes(q);
+    });
+  }
+
+  let rowsHtml = '';
 
   if (filtered.length === 0) {
-    noBookingsMsg.style.display = "block";
+    rowsHtml = '<tr class="empty-row"><td colspan="10">No bookings yet</td></tr>';
   } else {
-    noBookingsMsg.style.display = "none";
-    filtered.forEach((b) => {
+    rowsHtml = filtered.map((b) => {
       let statusClass = "status-pending";
       if (b.status === "Confirmed") statusClass = "status-confirmed";
       if (b.status === "Cancelled") statusClass = "status-cancelled";
+      const paymentClass = b.paymentStatus === 'Paid' ? 'pill paid' : 'pill neutral';
+      const paymentLabel = b.paymentStatus === 'Paid' ? `Paid${b.paymentMethod ? ' · ' + b.paymentMethod : ''}` : 'Unpaid';
+      const durationLabel = b.duration ? `${b.duration} mins` : '—';
+      const id = b._id || b.id;
 
-      table.innerHTML += `
+      return `
         <tr>
-          <td>${b.branch}</td>
-          <td>${b.stylist}</td>
-          <td>${b.service}</td>
-          <td>${b.date}</td>
+          <td>${b.branch || ''}</td>
+          <td>${b.stylist || ''}</td>
+          <td>${b.service || ''}</td>
+          <td>${b.date || ''}</td>
           <td>${formatTime12h(b.time)}</td>
-          <td>${b.duration} mins</td>
-          <td>${b.mobile}</td>
-          <td class="${statusClass}">${b.status || "Pending"}</td>
-          <td>${(b.paymentStatus || 'Unpaid')}${b.paymentMethod && b.paymentMethod !== 'none' ? ` (${b.paymentMethod})` : ''}</td>
-          <td>
-            <button class="action-btn confirm-btn" onclick="confirmBooking('${b._id || b.id}')">Confirm</button>
-            <button class="action-btn cancel-btn" onclick="cancelBooking('${b._id || b.id}')">Cancel</button>
-            <button class="action-btn delete-btn" onclick="deleteBooking('${b._id || b.id}')">Delete Permanently</button>
-            ${b.paymentStatus === 'Paid' ? '' : `<button class="action-btn confirm-btn" onclick="markPaid('${b._id || b.id}','cash')">Paid (Cash)</button>`}
-            ${b.paymentStatus === 'Paid' ? '' : `<button class="action-btn confirm-btn" onclick="markPaid('${b._id || b.id}','visa')">Paid (Visa)</button>`}
+          <td>${durationLabel}</td>
+          <td>${b.mobile || ''}</td>
+          <td class="${statusClass}"><span class="pill ${statusClass}">${b.status || "Pending"}</span></td>
+          <td class="payment-cell"><span class="${paymentClass}">${paymentLabel}</span></td>
+          <td class="actions-cell">
+            <button class="action-btn confirm-btn" data-action="confirm" data-id="${id}">Confirm</button>
+            <button class="action-btn cancel-btn" data-action="cancel" data-id="${id}">Cancel</button>
+            <button class="action-btn delete-btn" data-action="delete" data-id="${id}">Delete Permanently</button>
+            ${b.paymentStatus === 'Paid' ? '' : `<button class="action-btn pay-btn" data-action="pay-cash" data-id="${id}">Paid (Cash)</button>`}
+            ${b.paymentStatus === 'Paid' ? '' : `<button class="action-btn pay-btn" data-action="pay-visa" data-id="${id}">Paid (Visa)</button>`}
           </td>
         </tr>
       `;
-    });
+    }).join('');
   }
+
+  table.innerHTML = `${header}<tbody>${rowsHtml}</tbody>`;
+  if (noBookingsMsg) noBookingsMsg.style.display = "none";
 }
 
 async function updateBookingStatus(id, status) {
-  await api.apiFetch(`/api/bookings/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }, { auth: true });
-  await renderBookings();
+  try {
+    await api.apiFetch(`/api/bookings/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }, { auth: true });
+    await renderBookings();
+    showToast(`Booking ${status.toLowerCase()} successfully`, 'success');
+  } catch (err) {
+    showToast(err?.message || 'Update failed', 'error');
+  }
 }
 
 async function confirmBooking(id) {
@@ -438,19 +577,32 @@ async function deleteBooking(id) {
   try {
     await api.apiFetch(`/api/bookings/${id}`, { method: 'DELETE' }, { auth: true });
     await renderBookings();
+    showToast('Booking deleted', 'success');
   } catch (err) {
-    alert(`Delete failed: ${err.message || err}`);
+    showToast(err?.message || 'Delete failed', 'error');
   }
 }
 
 async function markPaid(id, method) {
-  await api.apiFetch(`/api/bookings/${id}`, { method: 'PUT', body: JSON.stringify({ paymentStatus: 'Paid', paymentMethod: method }) }, { auth: true });
-  await renderBookings();
+  try {
+    await api.apiFetch(`/api/bookings/${id}`, { method: 'PUT', body: JSON.stringify({ paymentStatus: 'Paid', paymentMethod: method }) }, { auth: true });
+    await renderBookings();
+    showToast(`Marked paid (${method})`, 'success');
+  } catch (err) {
+    showToast(err?.message || 'Payment update failed', 'error');
+  }
 }
 
 branchFilter.addEventListener("change", renderBookings);
 stylistFilter.addEventListener("change", renderBookings);
 statusFilter.addEventListener("change", renderBookings);
+searchInput?.addEventListener('input', () => {
+  // debounce not needed for short lists
+  renderBookings();
+});
+fromDateInput?.addEventListener('change', renderBookings);
+toDateInput?.addEventListener('change', renderBookings);
+refreshBtn?.addEventListener('click', renderBookings);
 
 if (logoutBtn) {
   logoutBtn.addEventListener("click", () => {
@@ -492,24 +644,30 @@ renderBookings();
 
 // Simple panel toggling
 function openPanel(panel) {
-  [panelStylist, panelPricing, panelGallery, panelEmployee, panelAttendance].forEach((p) => {
+  [panelStylist, panelPricing, panelGallery, panelEmployee, panelAttendance, panelProduct, panelClients].forEach((p) => {
     if (!p) return;
     if (p === panel) {
       p.hidden = false;
       p.style.display = "block";
+      p.classList.add('is-open');
       p.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       p.hidden = true;
       p.style.display = "none";
+      p.classList.remove('is-open');
     }
   });
+  if (panel === panelClients) {
+    renderClientsPanel();
+  }
 }
 
 function closePanels() {
-  [panelStylist, panelPricing, panelGallery, panelEmployee, panelAttendance].forEach((p) => {
+  [panelStylist, panelPricing, panelGallery, panelEmployee, panelAttendance, panelProduct, panelClients].forEach((p) => {
     if (!p) return;
     p.hidden = true;
     p.style.display = "none";
+    p.classList.remove('is-open');
   });
 }
 
@@ -518,7 +676,41 @@ addPricingBtn?.addEventListener("click", () => openPanel(panelPricing));
 addGalleryBtn?.addEventListener("click", () => openPanel(panelGallery));
 addEmployeeBtn?.addEventListener("click", () => openPanel(panelEmployee));
 addAttendanceBtn?.addEventListener("click", () => openPanel(panelAttendance));
+document.getElementById('add-product')?.addEventListener('click', () => openPanel(panelProduct));
 panelCloseBtns.forEach((btn) => btn.addEventListener("click", closePanels));
+
+// Dock buttons (data-panel-target)
+document.querySelectorAll('[data-panel-target]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.dataset.panelTarget;
+    const panel = document.getElementById(targetId);
+    if (panel) openPanel(panel);
+  });
+});
+
+document.getElementById('open-messaging-dock')?.addEventListener('click', () => {
+  showMessagingPanel();
+});
+document.getElementById('close-product-panel')?.addEventListener('click', () => {
+  if (!panelProduct) return;
+  panelProduct.hidden = true;
+  panelProduct.style.display = 'none';
+  panelProduct.classList.remove('is-open');
+});
+
+clientSearchInput?.addEventListener('input', () => renderClientsList());
+clientSearchBtn?.addEventListener('click', (e) => {
+  e.preventDefault();
+  renderClientsList();
+});
+clientRefreshBtn?.addEventListener('click', () => renderClientsPanel(true));
+
+// Create a messaging button if not present in markup
+const ensureMessagingButton = (function () {
+  return function ensureMessagingButtonInner() {
+    return document.getElementById('open-messaging') || null;
+  };
+})();
 
 attCheckInInput?.addEventListener('change', syncAttendanceHours);
 attCheckOutInput?.addEventListener('change', syncAttendanceHours);
@@ -604,7 +796,85 @@ function renderLists() {
   renderGalleryList();
   renderEmployeesList();
   renderAttendanceList();
+  renderMessagesList();
+  prefetchClients();
   renderStoragePill();
+}
+
+function ensureMessagingPanel() {
+  if (panelMessaging) return;
+  const container = document.createElement('section');
+  container.className = 'panel';
+  container.id = 'panel-messaging';
+  container.innerHTML = `
+    <div class="panel-header">
+      <h2>Client Messaging</h2>
+      <button class="ghost-btn" data-panel-close-msg>Close</button>
+    </div>
+    <form id="form-messaging" class="stack" novalidate>
+      <label>Client mobile
+        <input type="tel" id="msg-mobile" placeholder="010xxxxxxxx" required />
+      </label>
+      <label>Message
+        <textarea id="msg-body" rows="3" placeholder="Appointment update"></textarea>
+      </label>
+      <div class="panel-actions">
+        <button type="submit" class="action-btn">Send SMS</button>
+        <span id="msg-status" class="tiny"></span>
+      </div>
+    </form>
+    <div id="list-messages" class="stack"></div>
+  `;
+  document.body.appendChild(container);
+  panelMessaging = container;
+  formMessaging = container.querySelector('#form-messaging');
+  statusMessaging = container.querySelector('#msg-status');
+  listMessagesBox = container.querySelector('#list-messages');
+  container.querySelector('[data-panel-close-msg]')?.addEventListener('click', () => {
+    panelMessaging.hidden = true;
+    panelMessaging.classList.remove('is-open');
+    panelMessaging.style.display = 'none';
+    panelBackdrop?.classList.remove('is-open');
+  });
+}
+
+function showMessagingPanel() {
+  ensureMessagingPanel();
+  if (!panelBackdrop) {
+    panelBackdrop = document.createElement('div');
+    panelBackdrop.className = 'panel-backdrop';
+    panelBackdrop.addEventListener('click', () => {
+      panelMessaging.hidden = true;
+      panelMessaging.classList.remove('is-open');
+      panelMessaging.style.display = 'none';
+      panelBackdrop.classList.remove('is-open');
+    });
+    document.body.appendChild(panelBackdrop);
+  }
+  panelMessaging.hidden = false;
+  panelMessaging.style.display = 'block';
+  panelMessaging.classList.add('is-open');
+  panelBackdrop.classList.add('is-open');
+  renderMessagesList();
+}
+
+async function renderMessagesList() {
+  ensureMessagingPanel();
+  if (!listMessagesBox || !api?.apiFetch) return;
+  listMessagesBox.innerHTML = '<p class="hint">Loading messages...</p>';
+  try {
+    const msgs = await fetchMessages();
+    if (!msgs.length) {
+      listMessagesBox.innerHTML = '<p class="hint">No messages yet.</p>';
+      return;
+    }
+    listMessagesBox.innerHTML = msgs
+      .slice(0, 50)
+      .map((m) => `<div class="admin-row"><div><strong>${m.clientMobile}</strong> · ${new Date(m.createdAt).toLocaleString()}<div class="tiny">${m.body}</div></div><div class="tiny">${m.status || 'queued'}</div></div>`)
+      .join('');
+  } catch (err) {
+    listMessagesBox.innerHTML = `<p class="hint danger">Failed to load messages: ${err.message}</p>`;
+  }
 }
 
 function renderStoragePill() {
@@ -612,6 +882,160 @@ function renderStoragePill() {
   storagePill.textContent = 'Storage: synced via backend';
   storagePill.hidden = false;
   storagePill.className = 'pill confirmed';
+}
+
+function visitBadge(visits = 0) {
+  if (visits >= 8) return '<span class="pill confirmed">Top</span>';
+  if (visits >= 4) return '<span class="pill pending">Frequent</span>';
+  return '';
+}
+
+function renderClientSummary(clients = cachedClients) {
+  if (!clientSummary) return;
+  if (!clients || !clients.length) {
+    clientSummary.textContent = 'No clients yet.';
+    return;
+  }
+  const top = [...clients]
+    .sort((a, b) => (b.visitCount || 0) - (a.visitCount || 0))
+    .slice(0, 3)
+    .map((c) => `${c.name || 'Client'} (${c.visitCount || 0})`)
+    .join(' · ');
+  clientSummary.textContent = top ? `Top visitors: ${top}` : '';
+}
+
+async function viewClientDetail(mobile) {
+  if (!clientDetailBox) return;
+  const mobileClean = (mobile || '').trim();
+  if (!mobileClean) return;
+  clientDetailBox.innerHTML = '<p class="hint">Loading client...</p>';
+  try {
+    const data = await fetchClientDetail(mobileClean);
+    const visits = data.visitCount || 0;
+    const badge = visitBadge(visits);
+    const last = data.lastVisitDate ? ` · Last: ${data.lastVisitDate}` : '';
+    const pref = [data.preferredBranch ? `Branch: ${data.preferredBranch}` : '', data.preferredStylist ? `Stylist: ${data.preferredStylist}` : '']
+      .filter(Boolean)
+      .join(' · ');
+
+    const bookings = (data.bookings || []).slice(0, 8);
+    const bookingList = bookings.length
+      ? bookings
+          .map(
+            (b) => `
+        <div class="tiny">${b.date || ''} ${formatTime12h(b.time)} · ${b.service || ''} · ${b.status || ''} · ${b.branch || ''}</div>
+      `
+          )
+          .join('')
+      : '<p class="hint">No bookings yet.</p>';
+
+    clientDetailBox.innerHTML = `
+      <div class="admin-row">
+        <div>
+          <strong>${data.name || 'Client'}</strong> · ${mobileClean} ${badge}
+          <div class="tiny">Visits: ${visits}${last}${pref ? ' · ' + pref : ''}</div>
+          ${data.email ? `<div class="tiny">${data.email}</div>` : ''}
+        </div>
+      </div>
+      <div class="admin-list">${bookingList}</div>
+    `;
+  } catch (err) {
+    clientDetailBox.innerHTML = `<p class="hint danger">Failed to load client: ${err.message}</p>`;
+  }
+}
+
+function renderClientsList(list = cachedClients) {
+  if (!listClients) return;
+  const base = list || [];
+  if (!base.length) {
+    listClients.innerHTML = '<p class="hint">No clients yet.</p>';
+    renderClientSummary(base);
+    return;
+  }
+  const q = (clientSearchInput?.value || '').toLowerCase().trim();
+  const filtered = q
+    ? base.filter((c) => {
+        const bucket = [c.name, c.mobile, c.email].map((v) => (v || '').toLowerCase()).join(' ');
+        return bucket.includes(q);
+      })
+    : base;
+  const sorted = [...filtered].sort((a, b) => {
+    const diff = (b.visitCount || 0) - (a.visitCount || 0);
+    if (diff !== 0) return diff;
+    const aDate = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+    const bDate = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+    return bDate - aDate;
+  });
+  if (!sorted.length) {
+    listClients.innerHTML = '<p class="hint">No matching clients.</p>';
+    renderClientSummary(base);
+    return;
+  }
+  listClients.innerHTML = sorted
+    .slice(0, 200)
+    .map((c) => {
+      const visits = c.visitCount || 0;
+      const badge = visitBadge(visits);
+      const last = c.lastVisitDate ? ` · Last: ${c.lastVisitDate}` : '';
+      const name = c.name || 'Client';
+      const mobile = c.mobile || '';
+      return `
+        <div class="admin-row">
+          <div>
+            <strong>${name}</strong> · ${mobile} ${badge}
+            <div class="tiny">Visits: ${visits}${last}</div>
+          </div>
+          <div class="admin-row-actions">
+            <button class="ghost-btn xsmall" data-view-client="${mobile}">View</button>
+            <button class="ghost-btn xsmall danger" data-delete-client="${mobile}">Delete</button>
+          </div>
+        </div>`;
+    })
+    .join('');
+
+  listClients.querySelectorAll('[data-view-client]').forEach((btn) => {
+    btn.addEventListener('click', () => viewClientDetail(btn.dataset.viewClient));
+  });
+  listClients.querySelectorAll('[data-delete-client]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const mobileVal = btn.dataset.deleteClient;
+      const ok = confirm(`Delete client ${mobileVal}?`);
+      if (!ok) return;
+      try {
+        await deleteClient(mobileVal);
+        cachedClients = cachedClients.filter((c) => (c.mobile || '').trim() !== (mobileVal || '').trim());
+        renderClientsPanel(true);
+        if (clientDetailBox && clientDetailBox.textContent?.includes(mobileVal)) {
+          clientDetailBox.innerHTML = '<p class="hint">Select a client to see visits.</p>';
+        }
+        showToast('Client deleted', 'success');
+      } catch (err) {
+        showToast(err.message || 'Delete failed', 'error');
+      }
+    });
+  });
+  renderClientSummary(base);
+}
+
+async function renderClientsPanel(force = false) {
+  if (!panelClients || !listClients) return;
+  listClients.innerHTML = '<p class="hint">Loading clients...</p>';
+  try {
+    await fetchClients(force);
+    renderClientsList(cachedClients);
+  } catch (err) {
+    listClients.innerHTML = `<p class="hint danger">Failed to load clients: ${err.message}</p>`;
+  }
+}
+
+async function prefetchClients() {
+  if (!panelClients) return;
+  try {
+    await fetchClients(false);
+    renderClientSummary(cachedClients);
+  } catch (err) {
+    if (clientSummary) clientSummary.textContent = `Clients unavailable: ${err.message}`;
+  }
 }
 
 async function renderStylistsList() {
@@ -752,6 +1176,9 @@ async function renderGalleryList() {
       .map(
         (g) => `
         <div class="admin-row">
+          <div class="admin-row-thumb">
+            ${g.url ? `<img src="${g.url}" alt="${g.title || 'Photo'}">` : ''}
+          </div>
           <div>
             <strong>${g.title || 'Photo'}</strong> · ${g.branch || ''}
             <div class="tiny">${(g.tags || []).join(', ')}</div>
@@ -976,13 +1403,19 @@ async function renderAttendanceList() {
 formStylist?.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!api?.apiFetch) {
-    statusStylist.textContent = "Storage unavailable";
+    setStatus(statusStylist, "Storage unavailable", 'error');
     return;
   }
 
+  const nameInput = document.getElementById("stylist-name");
+  const branchInput = document.getElementById("stylist-branch");
+  clearFieldState([nameInput, branchInput]);
+  if (!nameInput?.value?.trim()) return flagInput(nameInput, 'Name is required');
+  if (!branchInput?.value) return flagInput(branchInput, 'Pick a branch');
+
   const payload = {
-    name: document.getElementById("stylist-name")?.value,
-    branch: document.getElementById("stylist-branch")?.value,
+    name: nameInput.value.trim(),
+    branch: branchInput.value,
     title: document.getElementById("stylist-title")?.value,
     specialties: splitList(document.getElementById("stylist-specialties")?.value?.replace(/\s*,\s*/g, ",")),
     times: splitList(document.getElementById("stylist-times")?.value),
@@ -993,16 +1426,22 @@ formStylist?.addEventListener("submit", async (e) => {
   try {
     if (editingStylistId) {
       await updateStylist(editingStylistId, payload);
-      statusStylist.textContent = "Stylist updated" + persistNote + ".";
+      setStatus(statusStylist, "Stylist updated" + persistNote + ".", 'success');
     } else {
       await saveStylist(payload);
-      statusStylist.textContent = "Stylist added to site" + persistNote + ".";
+      setStatus(statusStylist, "Stylist added to site" + persistNote + ".", 'success');
     }
     editingStylistId = null;
     formStylist.reset();
     await renderStylistsList();
+    showToast('Stylist saved', 'success');
   } catch (err) {
-    statusStylist.textContent = `Failed: ${err.message}`;
+    if (err?.status === 409) {
+      setStatus(statusStylist, "Duplicate stylist for this branch. Adjust name or branch.", 'error');
+    } else {
+      setStatus(statusStylist, `Failed: ${err.message}`, 'error');
+      showToast(err.message || 'Save failed', 'error');
+    }
   }
   clearStatusLater(statusStylist);
 });
@@ -1010,15 +1449,22 @@ formStylist?.addEventListener("submit", async (e) => {
 formPricing?.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!api?.apiFetch) {
-    statusPricing.textContent = "Storage unavailable";
+    setStatus(statusPricing, "Storage unavailable", 'error');
     return;
   }
 
+  const titleInput = document.getElementById("price-title");
+  const amountInput = document.getElementById("price-amount");
+  clearFieldState([titleInput, amountInput]);
+  if (!titleInput?.value?.trim()) return flagInput(titleInput, 'Title is required');
+  const amountVal = Number(amountInput?.value || 0);
+  if (!amountVal || amountVal < 0) return flagInput(amountInput, 'Amount must be positive');
+
   const featuresRaw = document.getElementById("price-features")?.value || "";
   const payload = {
-    title: document.getElementById("price-title")?.value,
+    title: titleInput.value.trim(),
     category: document.getElementById("price-category")?.value,
-    amount: document.getElementById("price-amount")?.value,
+    amount: amountVal,
     duration: document.getElementById("price-duration")?.value,
     features: splitList(featuresRaw)
   };
@@ -1026,16 +1472,18 @@ formPricing?.addEventListener("submit", async (e) => {
   try {
     if (editingPricingId) {
       await updatePricing(editingPricingId, payload);
-      statusPricing.textContent = "Pricing updated" + persistNote + ".";
+      setStatus(statusPricing, "Pricing updated" + persistNote + ".", 'success');
     } else {
       await savePricing(payload);
-      statusPricing.textContent = "Pricing card added to site" + persistNote + ".";
+      setStatus(statusPricing, "Pricing card added to site" + persistNote + ".", 'success');
     }
     editingPricingId = null;
     formPricing.reset();
     await renderPricingList();
+    showToast('Pricing saved', 'success');
   } catch (err) {
-    statusPricing.textContent = `Failed: ${err.message}`;
+    setStatus(statusPricing, `Failed: ${err.message}`, 'error');
+    showToast(err.message || 'Save failed', 'error');
   }
   clearStatusLater(statusPricing);
 });
@@ -1043,7 +1491,7 @@ formPricing?.addEventListener("submit", async (e) => {
 formGallery?.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!api?.apiFetch) {
-    statusGallery.textContent = "Storage unavailable";
+    setStatus(statusGallery, "Storage unavailable", 'error');
     return;
   }
 
@@ -1056,10 +1504,13 @@ formGallery?.addEventListener("submit", async (e) => {
   const fileInput = document.getElementById("gallery-file");
   const file = fileInput?.files?.[0];
   const url = document.getElementById("gallery-url")?.value;
+  clearFieldState([fileInput, document.getElementById("gallery-url"), document.getElementById("gallery-title")]);
+  if (!file && !url) return flagInput(document.getElementById("gallery-url"), 'Add an image file or URL');
+  if (!document.getElementById("gallery-title")?.value?.trim()) return flagInput(document.getElementById("gallery-title"), 'Title is required');
   const formData = new FormData();
   if (file) formData.append("image", file);
   if (url) formData.append("url", url);
-  formData.append("title", document.getElementById("gallery-title")?.value || "");
+  formData.append("title", document.getElementById("gallery-title")?.value?.trim() || "");
   formData.append("tags", normalizedTags.join(" "));
   formData.append("branch", document.getElementById("gallery-branch")?.value || "");
   formData.append("stylist", document.getElementById("gallery-stylist")?.value || "");
@@ -1080,12 +1531,14 @@ formGallery?.addEventListener("submit", async (e) => {
       });
     }
     if (!result.ok) throw new Error((await result.json()).error || "Upload failed");
-    statusGallery.textContent = "Photo added to gallery" + persistNote + ".";
+    setStatus(statusGallery, "Photo added to gallery" + persistNote + ".", 'success');
     editingGalleryId = null;
     formGallery.reset();
     await renderGalleryList();
+    showToast('Gallery item saved', 'success');
   } catch (err) {
-    statusGallery.textContent = `Failed: ${err.message}`;
+    setStatus(statusGallery, `Failed: ${err.message}`, 'error');
+    showToast(err.message || 'Save failed', 'error');
   }
   clearStatusLater(statusGallery);
 });
@@ -1093,7 +1546,7 @@ formGallery?.addEventListener("submit", async (e) => {
 formEmployee?.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!api?.apiFetch) {
-    statusEmployee.textContent = 'Storage unavailable';
+    setStatus(statusEmployee, 'Storage unavailable', 'error');
     return;
   }
 
@@ -1120,22 +1573,28 @@ formEmployee?.addEventListener('submit', async (e) => {
     loginPin: empLoginPinInput?.value,
   };
 
+  clearFieldState([document.getElementById('emp-name'), document.getElementById('emp-branch')]);
+  if (!payload.name?.trim()) return flagInput(document.getElementById('emp-name'), 'Name is required');
+  if (!payload.branch) return flagInput(document.getElementById('emp-branch'), 'Pick a branch');
+
   try {
     if (editingEmployeeId) {
       const updated = await updateEmployee(editingEmployeeId, payload);
       await upsertStylistFromEmployee(updated);
-      statusEmployee.textContent = 'Worker updated' + persistNote + '.';
+      setStatus(statusEmployee, 'Worker updated' + persistNote + '.', 'success');
     } else {
       const saved = await saveEmployee(payload);
       await upsertStylistFromEmployee(saved);
-      statusEmployee.textContent = 'Worker added' + persistNote + '.';
+      setStatus(statusEmployee, 'Worker added' + persistNote + '.', 'success');
     }
     editingEmployeeId = null;
     formEmployee.reset();
     await renderEmployeesList();
     await renderAttendanceList();
+    showToast('Staff saved', 'success');
   } catch (err) {
-    statusEmployee.textContent = `Failed: ${err.message}`;
+    setStatus(statusEmployee, `Failed: ${err.message}`, 'error');
+    showToast(err.message || 'Save failed', 'error');
   }
   clearStatusLater(statusEmployee);
 });
@@ -1143,7 +1602,7 @@ formEmployee?.addEventListener('submit', async (e) => {
 formAttendance?.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!api?.apiFetch) {
-    statusAttendance.textContent = 'Storage unavailable';
+    setStatus(statusAttendance, 'Storage unavailable', 'error');
     return;
   }
 
@@ -1161,22 +1620,55 @@ formAttendance?.addEventListener('submit', async (e) => {
     notes: document.getElementById('att-notes')?.value,
   };
 
+  clearFieldState([document.getElementById('att-employee'), document.getElementById('att-date')]);
+  if (!payload.employeeId) return flagInput(document.getElementById('att-employee'), 'Select an employee');
+  if (!payload.date) return flagInput(document.getElementById('att-date'), 'Date is required');
+
   try {
     if (editingAttendanceId) {
       await updateAttendance(editingAttendanceId, payload);
-      statusAttendance.textContent = 'Attendance updated' + persistNote + '.';
+      setStatus(statusAttendance, 'Attendance updated' + persistNote + '.', 'success');
     } else {
       await saveAttendance(payload);
-      statusAttendance.textContent = 'Attendance added' + persistNote + '.';
+      setStatus(statusAttendance, 'Attendance added' + persistNote + '.', 'success');
     }
     editingAttendanceId = null;
     formAttendance.reset();
     await renderAttendanceList();
+    showToast('Attendance saved', 'success');
   } catch (err) {
-    statusAttendance.textContent = `Failed: ${err.message}`;
+    setStatus(statusAttendance, `Failed: ${err.message}`, 'error');
+    showToast(err.message || 'Save failed', 'error');
   }
   clearStatusLater(statusAttendance);
 });
+
+// Messaging form
+(function bindMessagingForm() {
+  ensureMessagingPanel();
+  if (!formMessaging) return;
+  formMessaging.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const mobile = document.getElementById('msg-mobile')?.value.trim();
+    const body = document.getElementById('msg-body')?.value.trim();
+    if (!mobile || !body) {
+      if (statusMessaging) setStatus(statusMessaging, 'Mobile and message are required', 'error');
+      showToast('Mobile and message are required', 'error');
+      return;
+    }
+    try {
+      const sent = await sendMessageApi({ mobile, body });
+      if (statusMessaging) setStatus(statusMessaging, sent.status || 'sent', 'success');
+      showToast('Message queued', 'success');
+      await renderMessagesList();
+      formMessaging.reset();
+      clearStatusLater(statusMessaging);
+    } catch (err) {
+      if (statusMessaging) setStatus(statusMessaging, err.message || 'Send failed', 'error');
+      showToast(err.message || 'Send failed', 'error');
+    }
+  });
+})();
 
 // --- Automatic stylist-to-employee sync on admin load ---
 (async function syncStylistsToEmployeesOnLoad() {

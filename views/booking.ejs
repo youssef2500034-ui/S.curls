@@ -27,15 +27,23 @@
       <div class="field-error" data-error-for="branch"></div>
 
       <label for="service">Choose Service:</label>
-      <div class="service-pills" aria-label="Choose service type">
-        <button type="button" class="service-pill" data-service-pill="cutting">Cut</button>
-        <button type="button" class="service-pill" data-service-pill="styling">Style</button>
-        <button type="button" class="service-pill" data-service-pill="treatment">Treatment</button>
+      <div class="service-pills service-pills-multi" aria-label="Choose services (multi-select)">
+        <label class="service-pill" data-service-pill="cutting">
+          <input type="checkbox" value="cutting" checked>
+          <span>Cut</span>
+        </label>
+        <label class="service-pill" data-service-pill="styling">
+          <input type="checkbox" value="styling">
+          <span>Style</span>
+        </label>
+        <label class="service-pill" data-service-pill="treatment">
+          <input type="checkbox" value="treatment">
+          <span>Treatment</span>
+        </label>
       </div>
-      <select id="service" class="sr-only" required>
-        <option value="">-- Select Service --</option>
+      <select id="service" class="sr-only" multiple required>
         <option value="treatment">Treatment (90 mins)</option>
-        <option value="cutting">Cutting (60 mins)</option>
+        <option value="cutting" selected>Cutting (60 mins)</option>
         <option value="styling">Styling (45 mins)</option>
       </select>
       <div class="field-error" data-error-for="service"></div>
@@ -71,6 +79,23 @@
       <label for="mobile">Mobile Number:</label>
       <input type="tel" id="mobile" placeholder="01XXXXXXXXX" required pattern="[0-9]{11}">
       <div class="field-error" data-error-for="mobile"></div>
+
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" placeholder="Your name" autocomplete="name">
+      <div class="field-error" data-error-for="name"></div>
+
+      <label for="email">Email (optional):</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      <div class="field-error" data-error-for="email"></div>
+
+      <label for="payment-method">Payment Method:</label>
+      <select id="payment-method" required>
+        <option value="">-- Select Payment --</option>
+        <option value="cash">Cash</option>
+        <option value="card">Card</option>
+        <option value="instapay">Instapay</option>
+      </select>
+      <div class="field-error" data-error-for="payment-method"></div>
 
       <button type="submit" class="btn">Confirm Booking</button>
     </form>
