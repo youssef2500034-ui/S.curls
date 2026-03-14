@@ -11,89 +11,45 @@
   <section class="testimonials">
     <h1>Customer Reviews</h1>
     <p class="section-lead">Real words from guests who trust us with their curls.</p>
-    <div class="testimonials-container">
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-text">"Amazing experience! Sara did an incredible job with my curls. I've never felt more confident about my hair. Highly recommended!"</p>
-        <div class="customer-info">
-          <div class="customer-avatar">F</div>
-          <div class="customer-details">
-            <span class="customer-name">Fatima M.</span>
-            <span class="customer-service">Curly Treatment</span>
-            <span class="verified-badge">Verified visit</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-text">"Professional team, clean salon, and excellent service. Mona really knows how to handle curly hair. Will definitely come back!"</p>
-        <div class="customer-info">
-          <div class="customer-avatar">L</div>
-          <div class="customer-details">
-            <span class="customer-name">Layla H.</span>
-            <span class="customer-service">Styling</span>
-            <span class="verified-badge">Verified visit</span>
-          </div>
-        </div>
-      </div>
+    <div class="testimonial-form card">
+      <h2>Rate your last visit</h2>
+      <p class="hint">You’ll need to submit a rating to book again. We’ll match it to your latest visit on this mobile.</p>
+      <form id="rating-form" class="rating-form">
+        <label>Mobile (11 digits)
+          <input type="tel" id="rating-mobile" required placeholder="01012345678">
+        </label>
+        <label>Stylist (optional)
+          <input type="text" id="rating-stylist" placeholder="Stylist name">
+        </label>
+        <label>Rating
+          <select id="rating-score" required>
+            <option value="">Select</option>
+            <option value="5">5 - Loved it</option>
+            <option value="4">4 - Great</option>
+            <option value="3">3 - Good</option>
+            <option value="2">2 - Could be better</option>
+            <option value="1">1 - Not happy</option>
+          </select>
+        </label>
+        <label>Comments (optional)
+          <textarea id="rating-comment" rows="3" placeholder="Tell us about your visit"></textarea>
+        </label>
+        <button type="submit" class="primary-btn" id="rating-submit">Submit rating</button>
+        <p class="form-note" id="rating-status"></p>
+      </form>
+    </div>
 
-      <div class="testimonial-card">
+    <div class="testimonials-container" id="testimonials-container">
+      <div class="testimonial-card skeleton">
         <div class="stars">★★★★★</div>
-        <p class="testimonial-text">"The best salon in Rehab! Ahmed's cutting skills are outstanding. My hair looks better than ever. Thank you so much!"</p>
-        <div class="customer-info">
-          <div class="customer-avatar">N</div>
-          <div class="customer-details">
-            <span class="customer-name">Noor S.</span>
-            <span class="customer-service">Cutting</span>
-            <span class="verified-badge">Verified visit</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-text">"Worth every penny! The salon is beautifully decorated and the staff is super friendly. My hair transformation is incredible!"</p>
-        <div class="customer-info">
-          <div class="customer-avatar">H</div>
-          <div class="customer-details">
-            <span class="customer-name">Hana M.</span>
-            <span class="customer-service">Treatment</span>
-            <span class="verified-badge">Verified visit</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-text">"I've been to many salons, but S.curls is by far the best. Professional, caring, and they deliver amazing results every time!"</p>
-        <div class="customer-info">
-          <div class="customer-avatar">Z</div>
-          <div class="customer-details">
-            <span class="customer-name">Zahra A.</span>
-            <span class="customer-service">Full Package</span>
-            <span class="verified-badge">Verified visit</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-text">"Exceeded my expectations! The entire experience from booking to finishing was smooth and professional. Highly satisfied!"</p>
-        <div class="customer-info">
-          <div class="customer-avatar">A</div>
-          <div class="customer-details">
-            <span class="customer-name">Amira K.</span>
-            <span class="customer-service">Styling & Cut</span>
-            <span class="verified-badge">Verified visit</span>
-          </div>
-        </div>
+        <p class="testimonial-text">Loading testimonials...</p>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  
   <%- include('Components/footer') %>
+  <script src="testimonials.js"></script>
 </body>
 </html>

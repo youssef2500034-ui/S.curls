@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Checkout - S.curls Studio' }) %>
+  <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+  <%- include('Components/header', { active: 'shop' }) %>
+
+  <section class="page-hero cart-hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Checkout</p>
+        <h1>Secure your order</h1>
+        <p class="lead">Add your details and choose a payment method.</p>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <p class="label">Items</p>
+          <p class="value" id="checkout-count">0</p>
+          <p class="hint">Ready to ship</p>
+        </div>
+        <div class="metric-card">
+          <p class="label">Subtotal</p>
+          <p class="value" id="checkout-subtotal">EGP 0</p>
+          <p class="hint">Shipping calculated after address</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="checkout-section" id="checkout-page" data-page="checkout">
+    <div class="container checkout-grid">
+      <div class="checkout-form-card">
+        <h2>Shipping & Contact</h2>
+        <form id="checkout-form" novalidate>
+          <label>Full name
+            <input type="text" id="checkout-name" placeholder="Your name" required>
+          </label>
+          <label>Mobile
+            <input type="tel" id="checkout-mobile" placeholder="010xxxxxxxx" required>
+          </label>
+          <label>Email
+            <input type="email" id="checkout-email" placeholder="you@email.com">
+          </label>
+          <label>Shipping address
+            <textarea id="checkout-address" rows="3" placeholder="Street, city, notes" required></textarea>
+          </label>
+          <fieldset class="payment-fieldset">
+            <legend>Payment method</legend>
+            <label><input type="radio" name="payment" value="cash" checked> Cash</label>
+            <label><input type="radio" name="payment" value="card"> Card</label>
+            <label><input type="radio" name="payment" value="instapay"> Instapay</label>
+          </fieldset>
+          <div class="form-actions">
+            <button type="submit" class="btn">Place order</button>
+            <a class="btn ghost" href="/cart">Back to cart</a>
+          </div>
+          <p class="form-note" id="checkout-note"></p>
+        </form>
+      </div>
+      <aside class="checkout-summary">
+        <h3>Order summary</h3>
+        <div id="checkout-summary-items"></div>
+      </aside>
+    </div>
+  </section>
+
+  <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
+  <script src="cart.js"></script>
+</body>
+</html>

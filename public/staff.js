@@ -20,11 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const state = loadFilterState();
   const baseCards = [];
   let cards = [];
+  let renderedOnce = false;
+  let lastRenderedKey = '';
+  let knownIds = new Set();
   const filterGroups = document.querySelectorAll('.filter-group');
   async function fetchStylists() {
-    if (!api?.apiFetch) return [];
     try {
-      return await api.apiFetch('/api/stylists');
+      const url = `/api/stylists?t=${Date.now()}`;
+      if (api?.apiFetch) return await api.apiFetch(url);
+      const res = await fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-store' } });
+      if (!res.ok) throw new Error('Failed to load stylists');
+      return await res.json();
     } catch (err) {
       showTinyToast('Failed to load stylists');
       return [];
@@ -282,6 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyFilters();
     refreshAvailabilityUI();
+
+    lastRenderedKey = JSON.stringify(visibleList.map((s) => `${s.id || s._id || s.name}-${s.updatedAt || ''}`));
+    knownIds = new Set(visibleList.map((s) => String(s._id || s.id || s.name || '').toLowerCase()));
+    renderedOnce = true;
   }
 
   function buildCardFromCms(sty) {
@@ -397,4 +407,26 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCmsStylists();
   applyFilters();
   refreshAvailabilityUI();
+
+  // Safety fallback: if nothing rendered soon, show a message
+  setTimeout(() => {
+    const container = document.querySelector('.staff-container');
+    if (container && !renderedOnce) {
+      container.innerHTML = '<div class="empty-state">Unable to load stylists. Please refresh.</div>';
+    }
+  }, 5000);
+
+  // Poll for updates so new stylists appear without manual refresh
+  setInterval(async () => {
+    try {
+      const list = await fetchStylists();
+      const key = JSON.stringify((list || []).map((s) => `${s.id || s._id || s.name}-${s.updatedAt || ''}`));
+      const latestIds = new Set((list || []).map((s) => String(s._id || s.id || s.name || '').toLowerCase()));
+      if (key !== lastRenderedKey || latestIds.size !== knownIds.size) {
+        await renderCmsStylists();
+      }
+    } catch (_) {
+      // ignore polling errors
+    }
+  }, 15000);
 });

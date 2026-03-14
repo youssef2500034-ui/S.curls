@@ -28,6 +28,11 @@ const pageRoutes = {
 	'/contact': { view: 'contact', active: 'contact' },
 	'/testimonials': { view: 'testimonials', active: 'testimonials' },
 	'/our-branches': { view: 'Our Branches', active: 'our-branches' },
+	'/shop': { view: 'shop', active: 'shop' },
+	'/cart': { view: 'cart', active: 'shop' },
+	'/cart-checkout': { view: 'cart-checkout', active: 'shop' },
+	'/cart-confirmation': { view: 'cart-confirmation', active: 'shop' },
+	'/cart-payment-checkout': { view: 'cart-payment-checkout', active: 'shop' },
 };
 
 Object.entries(pageRoutes).forEach(([route, config]) => {

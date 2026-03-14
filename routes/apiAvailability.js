@@ -17,9 +17,12 @@ function overlaps(startA, durA, startB, durB) {
 
 router.get('/', asyncHandler(async (req, res) => {
   const date = (req.query.date || new Date().toISOString().split('T')[0]).trim();
+  const branchFilter = (req.query.branch || '').toLowerCase();
+  const stylistFilter = (req.query.stylist || '').toLowerCase();
+  const serviceFilter = (req.query.service || '').toLowerCase();
 
   const [stylists, pricing, bookings] = await Promise.all([
-    Stylist.find({}),
+    Stylist.find(branchFilter ? { branch: branchFilter } : {}),
     Pricing.find({}),
     Booking.find({ date, status: { $ne: 'Cancelled' } }),
   ]);
@@ -35,6 +38,7 @@ router.get('/', asyncHandler(async (req, res) => {
   stylists.forEach((sty) => {
     const branch = (sty.branch || '').toLowerCase();
     const stylistKey = (sty.name || '').toLowerCase();
+    if (stylistFilter && stylistFilter !== stylistKey) return;
     const times = Array.isArray(sty.times) ? sty.times : [];
 
     times.forEach((time) => {
@@ -47,12 +51,16 @@ router.get('/', asyncHandler(async (req, res) => {
       });
 
       if (!hasConflict) {
-        slots.push({
+        const slot = {
           branch,
           stylist: stylistKey,
           displayName: sty.name || stylistKey,
           time,
-        });
+        };
+        // If service filter provided, ensure duration map exists (still returned since overlap check already used duration)
+        if (!serviceFilter || durationMap[serviceFilter]) {
+          slots.push(slot);
+        }
       }
     });
   });

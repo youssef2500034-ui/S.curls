@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Order Confirmed - S.curls Studio' }) %>
+  <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+  <%- include('Components/header', { active: 'shop' }) %>
+
+  <section class="page-hero cart-hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Thank you</p>
+        <h1>Your order is confirmed</h1>
+        <p class="lead">We sent a confirmation to your phone. Our team will prepare your items.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="confirmation-section" id="confirmation-page" data-page="confirmation">
+    <div class="container">
+      <div class="confirm-card">
+        <h2>Order details</h2>
+        <p id="confirm-order-id">Order: --</p>
+        <div id="confirm-items"></div>
+        <p class="confirm-total" id="confirm-total">Subtotal: EGP 0</p>
+        <div class="confirm-actions">
+          <a class="btn" href="/shop">Back to shop</a>
+          <a class="btn ghost" href="/cart">View cart</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
+  <script src="cart.js"></script>
+</body>
+</html>

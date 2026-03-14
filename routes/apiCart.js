@@ -1,36 +1,49 @@
 const express = require('express');
 const router = express.Router();
 
-// Simple in-memory cart for demo
-let cart = {};
+// Simple session-aware cart (per ip + user-agent fallback) for demo purposes
+const carts = new Map();
 
-// Get cart
+function cartKey(req) {
+  const ua = req.get('user-agent') || '';
+  const ip = req.ip || req.connection?.remoteAddress || 'local';
+  return `${ip}-${ua.slice(0, 16)}`;
+}
+
+function getCart(req) {
+  const key = cartKey(req);
+  if (!carts.has(key)) carts.set(key, {});
+  return carts.get(key);
+}
+
 router.get('/', (req, res) => {
-  res.json(cart);
+  res.json(getCart(req));
 });
 
-// Add item to cart
 router.post('/add', (req, res) => {
-  const { product } = req.body;
+  const { product, qty = 1 } = req.body || {};
+  if (!product || !product._id) return res.status(400).json({ error: 'Product required' });
+  const cart = getCart(req);
   if (!cart[product._id]) {
-    cart[product._id] = { ...product, qty: 1 };
+    cart[product._id] = { ...product, qty: Number(qty) || 1 };
   } else {
-    cart[product._id].qty += 1;
+    cart[product._id].qty += Number(qty) || 1;
   }
   res.json(cart);
 });
 
-// Remove item from cart
 router.post('/remove', (req, res) => {
-  const { id } = req.body;
+  const { id } = req.body || {};
+  if (!id) return res.status(400).json({ error: 'id required' });
+  const cart = getCart(req);
   delete cart[id];
   res.json(cart);
 });
 
-// Clear cart
 router.post('/clear', (req, res) => {
-  cart = {};
-  res.json(cart);
+  const key = cartKey(req);
+  carts.set(key, {});
+  res.json({});
 });
 
 module.exports = router;

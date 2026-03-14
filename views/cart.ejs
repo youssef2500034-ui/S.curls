@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('Components/head', { title: 'Your Cart - S.curls Studio' }) %>
+  <link rel="stylesheet" href="shop.css">
+</head>
+<body>
+  <%- include('Components/header', { active: 'shop' }) %>
+
+  <section class="page-hero cart-hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">Shopping Cart</p>
+        <h1>Review your picks</h1>
+        <p class="lead">Adjust quantities, remove items, then continue to checkout.</p>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <p class="label">Items</p>
+          <p class="value" id="cart-count">0</p>
+          <p class="hint">Live synced</p>
+        </div>
+        <div class="metric-card">
+          <p class="label">Subtotal</p>
+          <p class="value" id="cart-subtotal">EGP 0</p>
+          <p class="hint">Taxes/shipping shown at checkout</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cart-section" id="cart-page" data-page="cart">
+    <div class="container">
+      <div class="cart-table" id="cart-table"></div>
+      <div class="cart-actions">
+        <a class="btn ghost" href="/shop">Continue shopping</a>
+        <a class="btn" href="/cart-checkout" id="proceed-checkout">Proceed to checkout</a>
+      </div>
+    </div>
+  </section>
+
+  <%- include('Components/footer') %>
+  <script src="api-client.js"></script>
+  <script src="cart.js"></script>
+</body>
+</html>

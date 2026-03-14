@@ -47,6 +47,9 @@ async function apiFetch(path, options = {}, { auth = false } = {}) {
     const msg = body?.error || body?.message || res.statusText;
     const err = new Error(msg || 'Request failed');
     err.status = res.status;
+    if (body && typeof body === 'object') {
+      Object.assign(err, body);
+    }
     throw err;
   }
   return body;

@@ -28,7 +28,7 @@ async function create(req, res) {
   // Also create a stylist entry for this employee
   const { Stylist } = require('../models/mydataschema');
   const stylistPayload = {
-    name: record.name,
+    name: (record.name || '').toLowerCase(),
     branch: record.branch,
     title: record.role,
     specialties: [],
@@ -37,7 +37,15 @@ async function create(req, res) {
     phone: record.loginPhone,
     visible: true,
   };
-  await Stylist.create(stylistPayload);
+
+  const existingStylist = await Stylist.findOne({ name: record.name.toLowerCase() })
+    || await Stylist.findOne({ phone: record.loginPhone });
+  if (existingStylist) {
+    existingStylist.set(stylistPayload);
+    await existingStylist.save();
+  } else {
+    await Stylist.create(stylistPayload);
+  }
 
   res.status(201).json(saved.toJSON());
 }

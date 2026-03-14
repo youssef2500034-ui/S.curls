@@ -1,9 +1,16 @@
 const serverless = require('serverless-http');
 const mongoose = require('mongoose');
+const dns = require('dns');
 
 const MONGO_URI = process.env.MONGO_URI;
 
 if (MONGO_URI) {
+    try {
+        dns.setServers(['1.1.1.1', '8.8.8.8']);
+        console.log('Node DNS servers set to Cloudflare/Google for SRV resolution (serverless entry)');
+    } catch (err) {
+        console.warn('Could not set DNS servers for Node resolver (serverless entry):', err && err.message ? err.message : err);
+    }
     mongoose.connect(MONGO_URI).catch((err) => {
         console.error('Mongo connect failed in serverless entry:', err);
     });

@@ -17,7 +17,7 @@ function normalizeStylist(payload, id = null) {
   return {
     _id: baseId,
     id: baseId,
-    name: (payload.name || 'New stylist').trim(),
+    name: (payload.name || 'New stylist').trim().toLowerCase(),
     branch,
     title: (payload.title || '').trim(),
     specialties: cleanArray(payload.specialties).map((s) => s.toLowerCase()),
@@ -29,12 +29,17 @@ function normalizeStylist(payload, id = null) {
 }
 
 async function list(req, res) {
-  const list = await Stylist.find();
+  const list = await Stylist.find().sort({ updatedAt: -1 });
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   res.json(list.map((doc) => doc.toJSON()));
 }
 
 async function create(req, res) {
   const record = normalizeStylist(req.body || {});
+  const exists = await Stylist.findOne({ name: record.name, branch: record.branch });
+  if (exists) return res.status(409).json({ error: 'Stylist already exists for this branch' });
   const saved = await Stylist.create(record);
   res.status(201).json(saved.toJSON());
 }
@@ -43,7 +48,10 @@ async function update(req, res) {
   const id = req.params.id;
   const existing = await Stylist.findById(id);
   if (!existing) return res.status(404).json({ error: 'Not found' });
-  existing.set(normalizeStylist({ ...existing.toObject(), ...req.body }, id));
+  const next = normalizeStylist({ ...existing.toObject(), ...req.body }, id);
+  const dupe = await Stylist.findOne({ name: next.name, branch: next.branch, _id: { $ne: id } });
+  if (dupe) return res.status(409).json({ error: 'Stylist already exists for this branch' });
+  existing.set(next);
   await existing.save();
   res.json(existing.toJSON());
 }
